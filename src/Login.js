@@ -11,6 +11,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Alert from "@mui/material/Alert";
+import Cookies from "js-cookie";
 
 // TODO remove, this demo shouldn't need to reset the theme.
 
@@ -28,9 +29,11 @@ export default function SignIn() {
     };
     try {
       const res = await axios.post("http://localhost:8080/login", user);
-      document.cookie =
-        "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      document.cookie = "token=" + res.data.token;
+
+      Cookies.remove("token");
+      Cookies.remove("username");
+      Cookies.set("token", res.data.token);
+      Cookies.set("username", res.data.username);
       const groups = res.data.group_list.split(",");
       function isAdmin(group) {
         return group.toUpperCase() === "ADMIN";

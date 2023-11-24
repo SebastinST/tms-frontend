@@ -15,11 +15,23 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import Link from "@mui/material/Link";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
 export default function AdminHome() {
+  useEffect(() => {
+    const checkLogin = async () => {
+      const isLogin = await axios.get(
+        "http://localhost:8080/controller/checkLogin",
+        Cookies.get("token")
+      );
+      console.log(isLogin);
+    };
+  }, []);
   return (
     <ThemeProvider theme={defaultTheme}>
       <CssBaseline />
