@@ -8,19 +8,42 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import Alert from "@mui/material/Alert";
 
 // TODO remove, this demo shouldn't need to reset the theme.
 
 const defaultTheme = createTheme();
-
 export default function SignIn() {
-  const handleSubmit = (event) => {
+  const navigate = useNavigate();
+  const [open, setOpen] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState("");
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
+    const user = {
+      username: data.get("username"),
       password: data.get("password"),
-    });
+    };
+    try {
+      const res = await axios.post("http://localhost:8080/login", user);
+      document.cookie =
+        "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie = "token=" + res.data.token;
+      const groups = res.data.group_list.split(",");
+      function isAdmin(group) {
+        return group.toUpperCase() === "ADMIN";
+      }
+      if (groups.some(isAdmin)) {
+        navigate("/adminhome");
+      } else {
+        navigate("/home");
+      }
+    } catch (error) {
+      setErrorMessage(error.response.data.errMessage);
+      setOpen(true);
+    }
   };
 
   return (
@@ -64,6 +87,7 @@ export default function SignIn() {
               id="password"
               autoComplete="current-password"
             />
+            {open && <Alert severity="error">{errorMessage}</Alert>}
             <Button
               type="submit"
               fullWidth
