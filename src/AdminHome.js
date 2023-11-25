@@ -39,9 +39,9 @@ export default function AdminHome() {
       }
     }
     const checkGroup = async group => {
-      const username = { username: Cookies.get("username") }
+      const username = { username: Cookies.get("username") }.username
       console.log(username)
-      const isInGroup = await axios.get("http://localhost:8080/controller/checkGroup", { params: { username: username.username, group: group } }).then(res => {
+      const isInGroup = await axios.get("http://localhost:8080/controller/checkGroup", { params: { username: username, group: group } }).then(res => {
         //console.log(res)
         return res.data
       })
