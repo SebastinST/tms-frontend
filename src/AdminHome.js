@@ -18,8 +18,8 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
 
+// TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
 export default function AdminHome() {
@@ -28,23 +28,11 @@ export default function AdminHome() {
   useEffect(() => {
     const checkLogin = async () => {
       const token = { token: Cookies.get("token") };
-      const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", { params: { token: token } });
-      console.log(isLogin.data);
-      if (!isLogin.data) {
-        navigate("/");
-      }
+      console.log(token);
+      const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", { params: token });
+      console.log(isLogin);
     };
     checkLogin();
-  }, []);
-
-  //Check Group
-  useEffect(() => {
-    const checkGroup = async () => {
-      const username = { token: Cookies.get("username") };
-      const checkGroup = await axios.get("http://localhost:8080/controller/checkGroup", { params: { username: username, group: "ADMIN" } });
-      console.log(checkGroup.data);
-    };
-    checkGroup();
   }, []);
 
   return (
