@@ -25,13 +25,14 @@ const defaultTheme = createTheme();
 export default function AdminHome() {
   useEffect(() => {
     const checkLogin = async () => {
-      const isLogin = await axios.get(
-        "http://localhost:8080/controller/checkLogin",
-        Cookies.get("token")
-      );
+      const token = { token: Cookies.get("token") };
+      console.log(token);
+      const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", token);
       console.log(isLogin);
     };
+    checkLogin();
   }, []);
+
   return (
     <ThemeProvider theme={defaultTheme}>
       <CssBaseline />
