@@ -18,6 +18,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles"
 import { useState, useEffect } from "react"
 import axios from "axios"
 import Cookies from "js-cookie"
+import { type } from "@testing-library/user-event/dist/type"
 
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme()
@@ -27,8 +28,12 @@ export default function AdminHome() {
     const checkLogin = async () => {
       const token = { token: Cookies.get("token") }
       console.log(token)
-      const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", { params: token })
+      const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", { params: token }).then(res => {
+        //console.log(res)
+        return res.data
+      })
       console.log(isLogin)
+      console.log(typeof isLogin)
     }
     checkLogin()
   }, [])
