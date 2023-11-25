@@ -19,8 +19,8 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { type } from "@testing-library/user-event/dist/type";
+import { useNavigate } from "react-router-dom";
 
-// TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
 export default function AdminHome() {
@@ -29,27 +29,22 @@ export default function AdminHome() {
   useEffect(() => {
     const checkLogin = async () => {
       const token = { token: Cookies.get("token") }.token;
-      //const token = { token: "123" }
-      console.log(token);
-      const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", { params: { token: token } }).then((res) => {
-        //console.log(res)
-        return res.data;
-      });
-      if (!isLogin) {
-        console.log("navigate to login page");
+      const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", { params: { token: token } });
+      if (!isLogin.data) {
+        navigate("/");
       }
     };
+    checkLogin();
+  }, []);
+  useEffect(() => {
     const checkGroup = async (group) => {
       const username = { username: Cookies.get("username") }.username;
-      console.log(username);
-      const isInGroup = await axios.get("http://localhost:8080/controller/checkGroup", { params: { username: username, group: group } }).then((res) => {
-        //console.log(res)
-        return res.data;
-      });
-      console.log(isInGroup);
+      const checkGroup = await axios.get("http://localhost:8080/controller/checkGroup", { params: { username: username, group: group } });
+      if (!checkGroup.data) {
+        navigate("/");
+      }
     };
     checkGroup("admin");
-    checkLogin();
   }, []);
 
   return (
