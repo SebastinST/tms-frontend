@@ -36,6 +36,8 @@ export default function AdminHome() {
     };
     checkLogin();
   }, []);
+
+  //check Group
   useEffect(() => {
     const checkGroup = async (group) => {
       const username = { username: Cookies.get("username") }.username;
