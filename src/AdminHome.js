@@ -27,7 +27,7 @@ const defaultTheme = createTheme()
 export default function AdminHome() {
   useEffect(() => {
     const checkLogin = async () => {
-      const token = { token: Cookies.get("token") }.token
+      const token = Cookies.get("token")
       //const token = { token: "123" }
       console.log(token)
       const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", { params: { token: token } }).then(res => {
@@ -39,7 +39,7 @@ export default function AdminHome() {
       }
     }
     const checkGroup = async group => {
-      const username = { username: Cookies.get("username") }.username
+      const username = Cookies.get("username")
       console.log(username)
       const isInGroup = await axios.get("http://localhost:8080/controller/checkGroup", { params: { username: username, group: group } }).then(res => {
         //console.log(res)
