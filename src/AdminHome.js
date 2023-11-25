@@ -28,15 +28,27 @@ export default function AdminHome() {
   //Check Login
   useEffect(() => {
     const checkLogin = async () => {
-      const token = { token: Cookies.get("token") };
+      const token = { token: Cookies.get("token") }.token;
+      //const token = { token: "123" }
       console.log(token);
-      const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", { params: token }).then((res) => {
+      const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", { params: { token: token } }).then((res) => {
         //console.log(res)
         return res.data;
       });
-      console.log(isLogin);
-      console.log(typeof isLogin);
+      if (!isLogin) {
+        console.log("navigate to login page");
+      }
     };
+    const checkGroup = async (group) => {
+      const username = { username: Cookies.get("username") }.username;
+      console.log(username);
+      const isInGroup = await axios.get("http://localhost:8080/controller/checkGroup", { params: { username: username, group: group } }).then((res) => {
+        //console.log(res)
+        return res.data;
+      });
+      console.log(isInGroup);
+    };
+    checkGroup("admin");
     checkLogin();
   }, []);
 
