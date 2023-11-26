@@ -1,11 +1,5 @@
 import * as React from "react";
-import AppBar from "@mui/material/AppBar";
 import Button from "@mui/material/Button";
-import CameraIcon from "@mui/icons-material/PhotoCamera";
-import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import CardMedia from "@mui/material/CardMedia";
 import CssBaseline from "@mui/material/CssBaseline";
 import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
@@ -18,64 +12,63 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { type } from "@testing-library/user-event/dist/type";
 import { useNavigate } from "react-router-dom";
+import Appbar from "./Appbar";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
 
 const defaultTheme = createTheme();
+function createData(name, calories, fat, carbs, protein) {
+  return { name, calories, fat, carbs, protein };
+}
+const rows = [createData("Frozen yoghurt", 159, 6.0, 24, 4.0), createData("Ice cream sandwich", 237, 9.0, 37, 4.3), createData("Eclair", 262, 16.0, 24, 6.0), createData("Cupcake", 305, 3.7, 67, 4.3), createData("Gingerbread", 356, 16.0, 49, 3.9)];
 
 export default function AdminHome() {
   const navigate = useNavigate();
-  //Check Login
-  useEffect(() => {
-    const checkLogin = async () => {
-      const token = { token: Cookies.get("token") }.token;
-      const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", { params: { token: token } });
-      if (!isLogin.data) {
-        navigate("/");
-      }
-    };
-    checkLogin();
-  }, []);
-
-  //check Group
-  useEffect(() => {
-    const checkGroup = async (group) => {
-      const username = { username: Cookies.get("username") }.username;
-      const checkGroup = await axios.get("http://localhost:8080/controller/checkGroup", { params: { username: username, group: group } });
-      if (!checkGroup.data) {
-        navigate("/");
-      }
-    };
-    checkGroup("admin");
-  }, []);
 
   return (
     <ThemeProvider theme={defaultTheme}>
       <CssBaseline />
-      <AppBar position="relative">
-        <Toolbar>
-          <Button variant="Contained">
-            <Typography variant="h3" color="inherit" noWrap>
-              TMS
-            </Typography>
-          </Button>
-          <Typography variant="h6" color="inherit" noWrap>
-            Admin Home
-          </Typography>
-        </Toolbar>
-      </AppBar>
+      <Appbar title="Admin Home" group="admin" />
       <main>
-        {/* Hero unit */}
-        <Box
-          sx={{
-            bgcolor: "background.paper",
-            pt: 8,
-            pb: 6,
-          }}
-        >
-          <Container maxWidth="sm"></Container>
-        </Box>
-        <Container sx={{ py: 8 }} maxWidth="md"></Container>
+        <Container maxWidth="lg">
+          <Box
+            sx={{
+              marginTop: 8,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
+              <TableHead>
+                <TableRow>
+                  <TableCell align="center">Username</TableCell>
+                  <TableCell align="center">Email</TableCell>
+                  <TableCell align="center">Password</TableCell>
+                  <TableCell align="center">Group</TableCell>
+                  <TableCell align="center">Status</TableCell>
+                  <TableCell align="center"></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {rows.map((row) => (
+                  <TableRow key={row.name} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+                    <TableCell align="center">{row.name}</TableCell>
+                    <TableCell align="center">{row.calories}</TableCell>
+                    <TableCell align="center">{row.fat}</TableCell>
+                    <TableCell align="center">{row.carbs}</TableCell>
+                    <TableCell align="center">{row.protein}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Box>
+        </Container>
       </main>
     </ThemeProvider>
   );
