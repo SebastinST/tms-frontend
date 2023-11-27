@@ -38,12 +38,12 @@ function Navbar() {
                 <span className="title">TMS</span>
             </Link>
             <div className="buttons">
-                <button>
+                <button type="button">
                     <Link to='/profile'>
                         My Account
                     </Link>
                 </button>
-                <button onClick={handleLogout}>
+                <button type="button" onClick={handleLogout}>
                     Log Out
                 </button>
             </div>
