@@ -32,13 +32,16 @@ export default function SignIn() {
     //try and catch error
     try {
       //post login
-      const res = await axios.post("http://localhost:8080/login", user);
+      const res = await axios.post(
+        "http://localhost:8080/controller/login",
+        user
+      );
 
       //cookie
       Cookies.remove("token");
       Cookies.remove("username");
-      Cookies.set("token", res.data.token);
-      Cookies.set("username", res.data.username);
+      Cookies.set("token", res.data.token, { expires: 7 });
+      Cookies.set("username", res.data.username, { expires: 7 });
 
       //check is admin
       const groups = res.data.group_list.split(",");
@@ -71,12 +74,40 @@ export default function SignIn() {
           <Typography component="h1" variant="h3">
             TMS
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-            <TextField margin="normal" required fullWidth id="username" label="Username" name="username" autoComplete="username" autoFocus />
-            <TextField margin="normal" required fullWidth name="password" label="Password" type="password" id="password" autoComplete="current-password" />
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            noValidate
+            sx={{ mt: 1 }}
+          >
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="username"
+              label="Username"
+              name="username"
+              autoComplete="username"
+              autoFocus
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+            />
             {/*error message*/}
             {open && <Alert severity="error">{errorMessage}</Alert>}
-            <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+            >
               Sign In
             </Button>
             <Grid container>
