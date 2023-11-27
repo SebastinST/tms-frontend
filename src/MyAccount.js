@@ -1,56 +1,86 @@
-import * as React from "react"
-import Button from "@mui/material/Button"
-import CssBaseline from "@mui/material/CssBaseline"
-import Grid from "@mui/material/Grid"
-import Stack from "@mui/material/Stack"
-import Box from "@mui/material/Box"
-import Toolbar from "@mui/material/Toolbar"
-import Typography from "@mui/material/Typography"
-import Container from "@mui/material/Container"
-import Link from "@mui/material/Link"
-import { createTheme, ThemeProvider } from "@mui/material/styles"
-import Appbar from "./Appbar"
-import { useLocation } from "react-router-dom"
-import TextField from "@mui/material/TextField"
-import Cookies from "js-cookie"
-import { useNavigate } from "react-router-dom"
-import { useState, useEffect } from "react"
-import axios from "axios"
+import * as React from "react";
+import Button from "@mui/material/Button";
+import CssBaseline from "@mui/material/CssBaseline";
+import Grid from "@mui/material/Grid";
+import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import Container from "@mui/material/Container";
+import Link from "@mui/material/Link";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import Appbar from "./Appbar";
+import { useLocation } from "react-router-dom";
+import TextField from "@mui/material/TextField";
+import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import Alert from "@mui/material/Alert";
 
-const defaultTheme = createTheme()
+const defaultTheme = createTheme();
 
 export default function MyAccount() {
   const [defAccInfo, setDefAccInfo] = useState({
     username: "",
     email: "",
-    group_list: ""
-  })
-  const { state } = useLocation()
-  const handleSubmit = async event => {
-    event.preventDefault()
-    //const data = new FormData(event.currentTarget)
-    console.log(event.currentTarget)
-  }
+    group_list: "",
+  });
+  const [fieldDisabled, setFieldDisabled] = useState(true);
+  const [editButton, setEditButton] = useState("Edit");
+  const [errorMessage, setErrorMessage] = React.useState("");
+  const [open, setOpen] = React.useState(false);
+  const { state } = useLocation();
   //Authorization
   const config = {
     headers: {
-      Authorization: "Bearer " + Cookies.get("token")
-    }
-  }
+      Authorization: "Bearer " + Cookies.get("token"),
+    },
+  };
   //get default account values
   useEffect(() => {
     async function fetchData() {
+      const response = await axios.get(
+        "http://localhost:8080/controller/getUser/" + Cookies.get("username"),
+        config
+      );
+      setDefAccInfo(response.data.data);
+    }
+    fetchData();
+  }, []);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (fieldDisabled) {
+      setFieldDisabled(false);
+      setEditButton("Save");
+    } else {
+      const data = new FormData(event.currentTarget);
+      const updateEmail = { email: data.get("email") };
       try {
-        const response = await axios.get("http://localhost:8080/controller/getUser/" + Cookies.get("username"), config)
-        setDefAccInfo(response.data.data)
-      } catch (e) {
-        console.log(e)
+        const res = await axios.put(
+          "http://localhost:8080/controller/updateUserEmail/" +
+            Cookies.get("username"),
+          updateEmail,
+          config
+        );
+        if (data.get("password") !== null && data.get("password") !== "") {
+          const updatePassword = { password: data.get("password") };
+
+          await axios.put(
+            "http://localhost:8080/controller/updateUserPassword/" +
+              Cookies.get("username"),
+            updatePassword,
+            config
+          );
+        }
+        setFieldDisabled(true);
+        setEditButton("Edit");
+      } catch (error) {
+        setErrorMessage(error.response.data.errMessage);
+        setOpen(true);
       }
     }
-    fetchData().catch(console.error)
-  }, [])
-  useEffect(() => console.log(defAccInfo), [setDefAccInfo])
-  console.log(defAccInfo.email)
+  };
   return (
     <ThemeProvider theme={defaultTheme}>
       <CssBaseline />
@@ -61,16 +91,21 @@ export default function MyAccount() {
             marginTop: 8,
             display: "flex",
             flexDirection: "column",
-            alignItems: "center"
+            alignItems: "center",
           }}
         >
           <Typography component="h1" variant="h4">
-            Username: {defAccInfo.username ? defAccInfo.username : "Loading..."}
+            Username: {defAccInfo.username}
           </Typography>
           <Typography component="h1" variant="h4">
             Groups: {defAccInfo.group_list}
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            noValidate
+            sx={{ mt: 1 }}
+          >
             <TextField
               margin="normal"
               required
@@ -80,18 +115,34 @@ export default function MyAccount() {
               name="email"
               autoComplete="email"
               value={defAccInfo.email}
-              onChange={e =>
+              onChange={(e) =>
                 setDefAccInfo({
                   ...defAccInfo,
-                  email: e.target.value
+                  email: e.target.value,
                 })
               }
-              disabled={true}
+              disabled={fieldDisabled}
               autoFocus
             />
-            <TextField margin="normal" required fullWidth name="password" label="Password" type="password" id="password" disabled={true} />
-            <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-              Edit
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type="password"
+              id="password"
+              disabled={fieldDisabled}
+            />
+            {/*error message*/}
+            {open && <Alert severity="error">{errorMessage}</Alert>}
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+            >
+              {editButton}
             </Button>
             <Grid container>
               <Grid item xs></Grid>
@@ -101,5 +152,5 @@ export default function MyAccount() {
         </Box>
       </main>
     </ThemeProvider>
-  )
+  );
 }
