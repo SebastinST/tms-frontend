@@ -52,6 +52,12 @@ export default function Appbar(props) {
 
   //logout
   const logOut = () => {
+    const config = {
+      headers: {
+        Authorization: "Bearer " + Cookies.get("token"),
+      },
+    };
+    axios.get("http://localhost:8080/controller/_logout", config);
     navigate("/");
   };
 

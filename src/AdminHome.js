@@ -20,15 +20,62 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import { KeyboardEventHandler } from "react";
+import CreatableSelect from "react-select/creatable";
 
 const defaultTheme = createTheme();
 function createData(name, calories, fat, carbs, protein) {
   return { name, calories, fat, carbs, protein };
 }
-const rows = [createData("Frozen yoghurt", 159, 6.0, 24, 4.0), createData("Ice cream sandwich", 237, 9.0, 37, 4.3), createData("Eclair", 262, 16.0, 24, 6.0), createData("Cupcake", 305, 3.7, 67, 4.3), createData("Gingerbread", 356, 16.0, 49, 3.9)];
+const rows = [
+  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
+  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
+  createData("Eclair", 262, 16.0, 24, 6.0),
+  createData("Cupcake", 305, 3.7, 67, 4.3),
+  createData("Gingerbread", 356, 16.0, 49, 3.9),
+];
+
+const components = {
+  DropdownIndicator: null,
+};
+
+const createOption = (label) => ({
+  label,
+  createValue: label,
+});
 
 export default function AdminHome() {
   const navigate = useNavigate();
+
+  const [inputValue, setInputValue] = React.useState("");
+  const [createValue, setCreateValue] = React.useState([]);
+
+  const handleKeyDown = (event) => {
+    if (!inputValue) return;
+    switch (event.key) {
+      case "Enter":
+      case "Tab":
+        setCreateValue((prev) => [...prev, createOption(inputValue)]);
+        setInputValue("");
+        event.preventDefault();
+    }
+  };
+  function getCreateValue(value) {
+    return value.createValue;
+  }
+
+  //Authorization
+  const config = {
+    headers: {
+      Authorization: "Bearer " + Cookies.get("token"),
+    },
+  };
+  const createGroup = async (event) => {
+    event.preventDefault();
+    const creGrp = { group_name: createValue.map(getCreateValue).join(",") };
+    const res = await axios.post("http://localhost:8080/controller/createGroup/", creGrp, config);
+    console.log(res);
+  };
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -44,6 +91,29 @@ export default function AdminHome() {
               alignItems: "center",
             }}
           >
+            {" "}
+            <Grid container spacing={2}>
+              <Grid item xs={8}></Grid>
+              <Grid item xs={2}>
+                <CreatableSelect
+                  components={components}
+                  inputValue={inputValue}
+                  isClearable
+                  isMulti
+                  menuIsOpen={false}
+                  onChange={(newValue) => setCreateValue(newValue)}
+                  onInputChange={(newValue) => setInputValue(newValue)}
+                  onKeyDown={handleKeyDown}
+                  placeholder=""
+                  value={createValue}
+                />
+              </Grid>
+              <Grid item xs={2}>
+                <Button variant="outlined" onClick={createGroup}>
+                  Create Group
+                </Button>
+              </Grid>
+            </Grid>
             <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
               <TableHead>
                 <TableRow>
