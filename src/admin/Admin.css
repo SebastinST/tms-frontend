@@ -1,0 +1,48 @@
+.admin-ui {
+    flex-grow: 1;
+    width: stretch;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 15px;
+    overflow: hidden;
+}
+
+.add-group {
+    align-self: flex-end;
+    display: flex;
+    gap: 20px;
+}
+
+.users-container {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.users-table {
+    width: stretch;
+    border: 2px solid black;
+    border-collapse: collapse;
+}
+
+.users-table th, td {
+    padding: 15px 0px;
+    text-align: center;
+    width: auto;
+}
+
+.users-table td + td, .users-table th + th {
+    border-left:2px solid black;
+}
+
+.users-table th {
+    position: sticky;
+    top: 0;
+    background-color: aliceblue;
+    padding: 20px 20px;
+}
+
+.users-buttons {
+    display: flex;
+    justify-content: space-around;
+}
