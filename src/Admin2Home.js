@@ -99,14 +99,16 @@ export default function Admin2Home() {
       //get the values for the row from the table state
       const email = table.find(row => row.username === id).email
       const password = table.find(row => row.username === id).password
-      console.log(email)
-      console.log(password)
+      const group_list = table.find(row => row.username === id).group_list
       const body = {}
       if (email !== "" && email !== undefined) {
         body.email = email
       }
       if (password !== "" && password !== undefined) {
         body.password = password
+      }
+      if (group_list !== "" && group_list !== undefined) {
+        body.group = group_list
       }
       try {
         const response = await axios.put("http://localhost:8080/controller/updateUser/" + row.username, body, config)
