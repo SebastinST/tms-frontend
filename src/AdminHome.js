@@ -22,6 +22,8 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { KeyboardEventHandler } from "react";
 import CreatableSelect from "react-select/creatable";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const defaultTheme = createTheme();
 function createData(name, calories, fat, carbs, protein) {
@@ -72,9 +74,14 @@ export default function AdminHome() {
   };
   const createGroup = async (event) => {
     event.preventDefault();
-    const creGrp = { group_name: createValue.map(getCreateValue).join(",") };
-    const res = await axios.post("http://localhost:8080/controller/createGroup/", creGrp, config);
-    console.log(res);
+    try {
+      const creGrp = { group_name: createValue.map(getCreateValue).join(",") };
+      const res = await axios.post("http://localhost:8080/controller/createGroup/", creGrp, config);
+      toast.success(res.data.message);
+      setCreateValue([]);
+    } catch (error) {
+      toast.error(error);
+    }
   };
 
   return (
@@ -91,7 +98,7 @@ export default function AdminHome() {
               alignItems: "center",
             }}
           >
-            {" "}
+            <ToastContainer position="top-center" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="light" />
             <Grid container spacing={2}>
               <Grid item xs={8}></Grid>
               <Grid item xs={2}>
