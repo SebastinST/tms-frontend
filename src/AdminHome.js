@@ -1,31 +1,31 @@
-import * as React from "react";
-import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
-import Grid from "@mui/material/Grid";
-import Stack from "@mui/material/Stack";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Container from "@mui/material/Container";
-import Link from "@mui/material/Link";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
-import Appbar from "./Appbar";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import { KeyboardEventHandler } from "react";
-import CreatableSelect from "react-select/creatable";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import TextField from "@mui/material/TextField";
-import Select from "react-select";
+import * as React from "react"
+import Button from "@mui/material/Button"
+import CssBaseline from "@mui/material/CssBaseline"
+import Grid from "@mui/material/Grid"
+import Stack from "@mui/material/Stack"
+import Box from "@mui/material/Box"
+import Toolbar from "@mui/material/Toolbar"
+import Typography from "@mui/material/Typography"
+import Container from "@mui/material/Container"
+import Link from "@mui/material/Link"
+import { createTheme, ThemeProvider } from "@mui/material/styles"
+import { useState, useEffect } from "react"
+import axios from "axios"
+import Cookies from "js-cookie"
+import { useNavigate } from "react-router-dom"
+import Appbar from "./Appbar"
+import Table from "@mui/material/Table"
+import TableBody from "@mui/material/TableBody"
+import TableCell from "@mui/material/TableCell"
+import TableContainer from "@mui/material/TableContainer"
+import TableHead from "@mui/material/TableHead"
+import TableRow from "@mui/material/TableRow"
+import { TextField } from "@mui/material"
+import { KeyboardEventHandler } from "react"
+import CreatableSelect from "react-select/creatable"
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import Select from "react-select"
 
 const defaultTheme = createTheme()
 const components = {
@@ -40,13 +40,11 @@ const createOption = label => ({
 export default function AdminHome() {
   const navigate = useNavigate()
 
-  const [inputValue, setInputValue] = React.useState("");
-  const [createValue, setCreateValue] = React.useState([]);
-  const [groupOptions, setGroupOptions] = React.useState([]);
   const [inputValue, setInputValue] = React.useState("")
   const [createValue, setCreateValue] = React.useState([])
   const [users, setUsers] = useState([])
   const [table, setTable] = useState([])
+  const [groupOptions, setGroupOptions] = React.useState([])
 
   const handleKeyDown = event => {
     if (!inputValue) return
@@ -60,35 +58,83 @@ export default function AdminHome() {
   }
 
   function getCreateValue(value) {
-    return value.createValue;
+    return value.createValue
+  }
+
+  function handleSubmit(e, row) {
+    e.preventDefault()
+    console.log(row)
+    //strip the _button from the id
+    const id = e.target.id.replace("_button", "")
+    const disabled = table.find(row => row.username === id).editDisabled
+    if (disabled) {
+      //set edit disabled to false for the specific row
+      setTable(
+        table.map(row => {
+          if (row.username === id) {
+            row.editDisabled = false
+          }
+          return row
+        })
+      )
+    } else if (!disabled) {
+      //set edit disabled to true for the specific row
+      setTable(
+        table.map(row => {
+          if (row.username === id) {
+            row.editDisabled = true
+          }
+          return row
+        })
+      )
+    }
+  }
+  function getGroupsValue(value) {
+    return { value: value.group_name, label: value.group_name }
   }
 
   //Authorization
   const config = {
     headers: {
-      Authorization: "Bearer " + Cookies.get("token"),
-    },
-  };
-  const createGroup = async (event) => {
-    event.preventDefault();
-    try {
-      const creGrp = { group_name: createValue.map(getCreateValue).join(",") };
-      const res = await axios.post("http://localhost:8080/controller/createGroup/", creGrp, config);
-      toast.success(res.data.message);
-      setCreateValue([]);
-    } catch (error) {
-      toast.error(error.response.data.errMessage);
+      Authorization: "Bearer " + Cookies.get("token")
     }
-  };
+  }
+  const createGroup = async event => {
+    event.preventDefault()
+    try {
+      const creGrp = { group_name: createValue.map(getCreateValue).join(",") }
+      const res = await axios.post("http://localhost:8080/controller/createGroup/", creGrp, config)
+      toast.success(res.data.message)
+      setCreateValue([])
+    } catch (error) {
+      toast.error(error.response.data.errMessage)
+    }
+  }
+
+  //Run once on page load
+  //use Axios to get all users
+  useEffect(() => {
+    async function fetchData() {
+      const res = await axios.get("http://localhost:8080/controller/getUsers/", config)
+      setUsers(res.data.data)
+      //set users to table default edit disabled
+      setTable(
+        res.data.data.map(user => {
+          return { ...user, editDisabled: true }
+        })
+      )
+    }
+    fetchData()
+  }, [])
 
   //get groups
   useEffect(() => {
     const getGroups = async () => {
-      const groupsList = await axios.get("http://localhost:8080/controller/getGroups", config);
-      setGroupOptions(groupsList.data.data.map(getGroupsValue));
-    };
-    getGroups();
-  }, []);
+      const groupsList = await axios.get("http://localhost:8080/controller/getGroups", config)
+      setGroupOptions(groupsList.data.data.map(getGroupsValue))
+    }
+    getGroups()
+  }, [])
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -104,18 +150,7 @@ export default function AdminHome() {
               alignItems: "center"
             }}
           >
-            <ToastContainer
-              position="top-center"
-              autoClose={5000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-            />
+            <ToastContainer position="top-center" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="light" />
             <Grid container spacing={2}>
               <Grid item xs={8}></Grid>
               <Grid item xs={2}>
@@ -141,59 +176,19 @@ export default function AdminHome() {
               <TableBody>
                 <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
                   <TableCell align="center">
-                    <TextField
-                      margin="normal"
-                      required
-                      fullWidth
-                      id="username"
-                      label="Username"
-                      name="username"
-                      autoFocus
-                    />
+                    <TextField margin="normal" required fullWidth id="username" label="Username" name="username" autoFocus />
                   </TableCell>
                   <TableCell align="center">
-                    <TextField
-                      margin="normal"
-                      required
-                      fullWidth
-                      id="email"
-                      label="Email"
-                      name="email"
-                      autoFocus
-                    />
+                    <TextField margin="normal" required fullWidth id="email" label="Email" name="email" autoFocus />
                   </TableCell>
                   <TableCell align="center">
-                    <TextField
-                      margin="normal"
-                      required
-                      fullWidth
-                      name="password"
-                      label="Password"
-                      type="password"
-                      id="password"
-                    />
+                    <TextField margin="normal" required fullWidth name="password" label="Password" type="password" id="password" />
                   </TableCell>
                   <TableCell align="center">
-                    <Select
-                      isMulti
-                      name="colors"
-                      options={groupOptions}
-                      className="basic-multi-select"
-                      classNamePrefix="select"
-                    />
+                    <Select isMulti name="colors" options={groupOptions} className="basic-multi-select" classNamePrefix="select" />
                   </TableCell>
                   <TableCell align="center">Active</TableCell>
                 </TableRow>
-                {rows.map((row) => (
-                  <TableRow
-                    key={row.name}
-                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                  >
-                    <TableCell align="center">{row.name}</TableCell>
-                    <TableCell align="center">{row.calories}</TableCell>
-                    <TableCell align="center">{row.fat}</TableCell>
-                    <TableCell align="center">{row.carbs}</TableCell>
-                    <TableCell align="center">{row.protein}</TableCell>
                 {table.map(row => (
                   <TableRow key={row.username} noValidate>
                     <TableCell align="center">
