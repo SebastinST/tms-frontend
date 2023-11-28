@@ -4,7 +4,7 @@ import Login from './login/Login';
 import User from './user/User';
 import Admin from './admin/Admin';
 import Profile from './profile/Profile';
-
+import CheckLogin from './components/CheckLogin';
 
 function App() {
 
@@ -14,9 +14,10 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Login />} />
-            <Route path="/user" element={<User />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/user" element={<CheckLogin><User /></CheckLogin>} />
+            <Route path="/admin" element={<CheckLogin><Admin /></CheckLogin>} />
+            <Route path="/profile" element={<CheckLogin><Profile /></CheckLogin>} />
+            <Route path="*" element={<Login />} />
           </Routes>
         </BrowserRouter>
       </div>
