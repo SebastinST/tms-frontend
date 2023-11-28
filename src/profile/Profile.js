@@ -20,11 +20,12 @@ function Profile() {
                 let result = await Axios.get('http://localhost:8000/getSelf',{
                     headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}` }
                 });
-                setProfile(result.data.data);
+                if (result.data) {
+                    setProfile(result.data.data);
+                }
             } catch (e) {
                 let error = e.response.data
                 if (error) {
-                    
                     // Show error message
                     toast.error(error.message, {
                         autoClose: false,
@@ -53,8 +54,10 @@ function Profile() {
                 inputs, 
                 {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
             );
-            toast.success(result.data.message);
-            setEditing(false);
+            if (result) {
+                toast.success(result.data.message);
+                setEditing(false);
+            }
         } catch (e) {
             let error = e.response.data
             if (error) {
