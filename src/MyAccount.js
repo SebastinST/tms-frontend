@@ -41,7 +41,10 @@ export default function MyAccount() {
   //get default account values
   useEffect(() => {
     async function fetchData() {
-      const response = await axios.get("http://localhost:8080/controller/getUser/" + Cookies.get("username"), config);
+      const response = await axios.get(
+        "http://localhost:8080/controller/getUser/" + Cookies.get("username"),
+        config
+      );
       //set password in response to empty
       response.data.data.password = "";
       setDefAccInfo(response.data.data);
@@ -57,11 +60,19 @@ export default function MyAccount() {
       const data = new FormData(event.currentTarget);
       const updateEmail = { email: data.get("email") };
       try {
-        const res = await axios.put("http://localhost:8080/controller/updateUserEmail/" + Cookies.get("username"), updateEmail, config);
+        const res = await axios.put(
+          "http://localhost:8080/controller/updateUserEmail/",
+          updateEmail,
+          config
+        );
         if (data.get("password") !== null && data.get("password") !== "") {
           const updatePassword = { password: data.get("password") };
 
-          await axios.put("http://localhost:8080/controller/updateUserPassword/" + Cookies.get("username"), updatePassword, config);
+          await axios.put(
+            "http://localhost:8080/controller/updateUserPassword/" + Cookies.get("username"),
+            updatePassword,
+            config
+          );
         }
         setFieldDisabled(true);
         setEditButton("Edit");
