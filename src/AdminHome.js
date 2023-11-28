@@ -61,36 +61,48 @@ export default function AdminHome() {
     return value.createValue
   }
 
-  function handleSubmit(e, row) {
+  async function handleSubmit(e, row) {
     e.preventDefault()
-    console.log(row)
     //strip the _button from the id
-    const id = e.target.id.replace("_button", "")
-    const disabled = table.find(row => row.username === id).editDisabled
-    if (disabled) {
+    const username = row.username
+    if (row.editDisabled) {
       //set edit disabled to false for the specific row
       setTable(
         table.map(row => {
-          if (row.username === id) {
+          if (row.username === username) {
             row.editDisabled = false
           }
           return row
         })
       )
-    } else if (!disabled) {
+    } else if (row.editDisabled === false) {
       //set edit disabled to true for the specific row
       setTable(
         table.map(row => {
-          if (row.username === id) {
+          if (row.username === username) {
             row.editDisabled = true
           }
           return row
         })
       )
+      try {
+        //build the body dynamically based on if the row is empty or not
+        const body = {}
+        /*const response = await axios.put(`http://localhost:8080/controller/updateUser/${username}`, body, config)
+        toast.success(response.data.message)
+        //need to update the table
+        setTable(
+          table.map(row => {
+            if (row.username === username) {
+              row.editDisabled = true
+            }
+            return row
+          })
+        )*/
+      } catch (error) {
+        toast.error(error.response.data.errMessage)
+      }
     }
-  }
-  function getGroupsValue(value) {
-    return { value: value.group_name, label: value.group_name }
   }
 
   //Authorization
@@ -99,6 +111,40 @@ export default function AdminHome() {
       Authorization: "Bearer " + Cookies.get("token")
     }
   }
+
+  async function handleDisable(e, row) {
+    e.preventDefault()
+    const username = row.username
+    try {
+      const response = await axios.put(`http://localhost:8080/controller/toggleUserStatus/${username}`, {}, config)
+      toast.success(response.data.message)
+      //need to update the table
+      setTable(
+        table.map(row => {
+          if (row.username === username) {
+            row.is_disabled = row.is_disabled === 0 ? 1 : 0
+          }
+          return row
+        })
+      )
+    } catch (error) {
+      toast.error(error.response.data.errMessage)
+    }
+  }
+
+  async function testFunction(event) {
+    console.log("hi")
+    event.preventDefault()
+    //get data from a field called test
+    const data = new FormData(event.currentTarget)
+    const test = data.get("test_email")
+    console.log(test)
+  }
+
+  function getGroupsValue(value) {
+    return { value: value.group_name, label: value.group_name }
+  }
+
   const createGroup = async event => {
     event.preventDefault()
     try {
@@ -162,58 +208,60 @@ export default function AdminHome() {
                 </Button>
               </Grid>
             </Grid>
-            <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
-              <TableHead>
-                <TableRow>
-                  <TableCell align="center">Username</TableCell>
-                  <TableCell align="center">Email</TableCell>
-                  <TableCell align="center">Password</TableCell>
-                  <TableCell align="center">Group</TableCell>
-                  <TableCell align="center">Status</TableCell>
-                  <TableCell align="center">Management</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-                  <TableCell align="center">
-                    <TextField margin="normal" required fullWidth id="username" label="Username" name="username" autoFocus />
-                  </TableCell>
-                  <TableCell align="center">
-                    <TextField margin="normal" required fullWidth id="email" label="Email" name="email" autoFocus />
-                  </TableCell>
-                  <TableCell align="center">
-                    <TextField margin="normal" required fullWidth name="password" label="Password" type="password" id="password" />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Select isMulti name="colors" options={groupOptions} className="basic-multi-select" classNamePrefix="select" />
-                  </TableCell>
-                  <TableCell align="center">Active</TableCell>
-                </TableRow>
-                {table.map(row => (
-                  <TableRow key={row.username} noValidate>
-                    <TableCell align="center">
-                      <TextField margin="normal" defaultValue={row.username} fullWidth id={row.username} name={row.username} disabled={row.editDisabled}></TextField>
-                    </TableCell>
-                    <TableCell align="center">
-                      <TextField margin="normal" defaultValue={row.email} fullWidth id={row.username + "_email"} name={row.username + "_email"} disabled={row.editDisabled}></TextField>
-                    </TableCell>
-                    <TableCell align="center">
-                      <TextField margin="normal" fullWidth id={row.username + "_password"} name={row.username + "_password"} disabled={row.editDisabled}></TextField>
-                    </TableCell>
-                    <TableCell align="center">
-                      <TextField margin="normal" defaultValue={row.group_list} fullWidth id={row.username + "_group_list"} name={row.username + "_group_list"} disabled={row.editDisabled}></TextField>
-                    </TableCell>
-                    <TableCell align="center">{row.is_disabled === 0 ? "Active" : "Disabled "}</TableCell>
-                    <TableCell align="center">
-                      <Button variant="outlined" onClick={event => handleSubmit(event, row)} id={row.username + "_button"}>
-                        {row.editDisabled === true ? "Edit" : "Save"}
-                      </Button>
-                      <Button variant="outlined">{row.is_disabled === 0 ? "Disable" : "Activate"}</Button>
-                    </TableCell>
+            <form onSubmit={testFunction}>
+              <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell align="center">Username</TableCell>
+                    <TableCell align="center">Email</TableCell>
+                    <TableCell align="center">Password</TableCell>
+                    <TableCell align="center">Group</TableCell>
+                    <TableCell align="center">Status</TableCell>
+                    <TableCell align="center">Management</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHead>
+                <TableBody>
+                  <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+                    <TableCell align="center">
+                      <TextField margin="normal" required fullWidth id="username" label="Username" name="username" autoFocus />
+                    </TableCell>
+                    <TableCell align="center">
+                      <TextField margin="normal" required fullWidth id="email" label="Email" name="email" autoFocus />
+                    </TableCell>
+                    <TableCell align="center">
+                      <TextField margin="normal" required fullWidth name="password" label="Password" type="password" id="password" />
+                    </TableCell>
+                    <TableCell align="center">
+                      <Select isMulti name="colors" options={groupOptions} className="basic-multi-select" classNamePrefix="select" />
+                    </TableCell>
+                    <TableCell align="center">Active</TableCell>
+                  </TableRow>
+                  {table.map(row => (
+                    <TableRow key={row.username} noValidate>
+                      <TableCell align="center">{row.username}</TableCell>
+                      <TableCell align="center">
+                        <TextField margin="normal" defaultValue={row.email} fullWidth id={row.username + "_email"} name={row.username + "_email"} disabled={row.editDisabled}></TextField>
+                      </TableCell>
+                      <TableCell align="center">
+                        <TextField margin="normal" fullWidth id={row.username + "_password"} name={row.username + "_password"} disabled={row.editDisabled}></TextField>
+                      </TableCell>
+                      <TableCell align="center">
+                        <TextField margin="normal" defaultValue={row.group_list} fullWidth id={row.username + "_group_list"} name={row.username + "_group_list"} disabled={row.editDisabled}></TextField>
+                      </TableCell>
+                      <TableCell align="center">{row.is_disabled === 0 ? "Active" : "Disabled "}</TableCell>
+                      <TableCell align="center">
+                        <Button variant="outlined" type="submit" onClick={event => handleSubmit(event, row)} id={row.username + "_button"}>
+                          {row.editDisabled === true ? "Edit" : "Save"}
+                        </Button>
+                        <Button variant="outlined" onClick={event => handleDisable(event, row)}>
+                          {row.is_disabled === 0 ? "Disable" : "Activate"}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </form>
           </Box>
         </Container>
       </main>
