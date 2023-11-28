@@ -1,81 +1,119 @@
-import * as React from "react";
-import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
-import Grid from "@mui/material/Grid";
-import Stack from "@mui/material/Stack";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Container from "@mui/material/Container";
-import Link from "@mui/material/Link";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
-import Appbar from "./Appbar";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import { KeyboardEventHandler } from "react";
-import CreatableSelect from "react-select/creatable";
+import * as React from "react"
+import Button from "@mui/material/Button"
+import CssBaseline from "@mui/material/CssBaseline"
+import Grid from "@mui/material/Grid"
+import Stack from "@mui/material/Stack"
+import Box from "@mui/material/Box"
+import Toolbar from "@mui/material/Toolbar"
+import Typography from "@mui/material/Typography"
+import Container from "@mui/material/Container"
+import Link from "@mui/material/Link"
+import { createTheme, ThemeProvider } from "@mui/material/styles"
+import { useState, useEffect } from "react"
+import axios from "axios"
+import Cookies from "js-cookie"
+import { useNavigate } from "react-router-dom"
+import Appbar from "./Appbar"
+import Table from "@mui/material/Table"
+import TableBody from "@mui/material/TableBody"
+import TableCell from "@mui/material/TableCell"
+import TableContainer from "@mui/material/TableContainer"
+import TableHead from "@mui/material/TableHead"
+import TableRow from "@mui/material/TableRow"
+import { TextField } from "@mui/material"
+import { KeyboardEventHandler } from "react"
+import CreatableSelect from "react-select/creatable"
 
-const defaultTheme = createTheme();
-function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
-}
-const rows = [
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-];
-
+const defaultTheme = createTheme()
 const components = {
-  DropdownIndicator: null,
-};
+  DropdownIndicator: null
+}
 
-const createOption = (label) => ({
+const createOption = label => ({
   label,
-  createValue: label,
-});
+  createValue: label
+})
 
 export default function AdminHome() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const [inputValue, setInputValue] = React.useState("");
-  const [createValue, setCreateValue] = React.useState([]);
+  const [inputValue, setInputValue] = React.useState("")
+  const [createValue, setCreateValue] = React.useState([])
+  const [users, setUsers] = useState([])
+  const [table, setTable] = useState([])
 
-  const handleKeyDown = (event) => {
-    if (!inputValue) return;
+  const handleKeyDown = event => {
+    if (!inputValue) return
     switch (event.key) {
       case "Enter":
       case "Tab":
-        setCreateValue((prev) => [...prev, createOption(inputValue)]);
-        setInputValue("");
-        event.preventDefault();
+        setCreateValue(prev => [...prev, createOption(inputValue)])
+        setInputValue("")
+        event.preventDefault()
     }
-  };
+  }
+
   function getCreateValue(value) {
-    return value.createValue;
+    return value.createValue
+  }
+
+  function handleSubmit(e, row) {
+    e.preventDefault()
+    console.log(row)
+    //strip the _button from the id
+    const id = e.target.id.replace("_button", "")
+    const disabled = table.find(row => row.username === id).editDisabled
+    if (disabled) {
+      //set edit disabled to false for the specific row
+      setTable(
+        table.map(row => {
+          if (row.username === id) {
+            row.editDisabled = false
+          }
+          return row
+        })
+      )
+    } else if (!disabled) {
+      //set edit disabled to true for the specific row
+      setTable(
+        table.map(row => {
+          if (row.username === id) {
+            row.editDisabled = true
+          }
+          return row
+        })
+      )
+    }
   }
 
   //Authorization
   const config = {
     headers: {
-      Authorization: "Bearer " + Cookies.get("token"),
-    },
-  };
-  const createGroup = async (event) => {
-    event.preventDefault();
-    const creGrp = { group_name: createValue.map(getCreateValue).join(",") };
-    const res = await axios.post("http://localhost:8080/controller/createGroup/", creGrp, config);
-    console.log(res);
-  };
+      Authorization: "Bearer " + Cookies.get("token")
+    }
+  }
+  const createGroup = async event => {
+    event.preventDefault()
+    const creGrp = { group_name: createValue.map(getCreateValue).join(",") }
+    const res = await axios.post("http://localhost:8080/controller/createGroup/", creGrp, config)
+    console.log(res)
+  }
+
+  //Run once on page load
+  //use Axios to get all users
+  useEffect(() => {
+    async function fetchData() {
+      const res = await axios.get("http://localhost:8080/controller/getUsers/", config)
+      setUsers(res.data.data)
+      //set users to table default edit disabled
+      setTable(
+        res.data.data.map(user => {
+          return { ...user, editDisabled: true }
+        })
+      )
+    }
+    fetchData()
+  }, [])
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -88,25 +126,14 @@ export default function AdminHome() {
               marginTop: 8,
               display: "flex",
               flexDirection: "column",
-              alignItems: "center",
+              alignItems: "center"
             }}
           >
             {" "}
             <Grid container spacing={2}>
               <Grid item xs={8}></Grid>
               <Grid item xs={2}>
-                <CreatableSelect
-                  components={components}
-                  inputValue={inputValue}
-                  isClearable
-                  isMulti
-                  menuIsOpen={false}
-                  onChange={(newValue) => setCreateValue(newValue)}
-                  onInputChange={(newValue) => setInputValue(newValue)}
-                  onKeyDown={handleKeyDown}
-                  placeholder=""
-                  value={createValue}
-                />
+                <CreatableSelect components={components} inputValue={inputValue} isClearable isMulti menuIsOpen={false} onChange={newValue => setCreateValue(newValue)} onInputChange={newValue => setInputValue(newValue)} onKeyDown={handleKeyDown} placeholder="" value={createValue} />
               </Grid>
               <Grid item xs={2}>
                 <Button variant="outlined" onClick={createGroup}>
@@ -122,17 +149,31 @@ export default function AdminHome() {
                   <TableCell align="center">Password</TableCell>
                   <TableCell align="center">Group</TableCell>
                   <TableCell align="center">Status</TableCell>
-                  <TableCell align="center"></TableCell>
+                  <TableCell align="center">Management</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {rows.map((row) => (
-                  <TableRow key={row.name} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-                    <TableCell align="center">{row.name}</TableCell>
-                    <TableCell align="center">{row.calories}</TableCell>
-                    <TableCell align="center">{row.fat}</TableCell>
-                    <TableCell align="center">{row.carbs}</TableCell>
-                    <TableCell align="center">{row.protein}</TableCell>
+                {table.map(row => (
+                  <TableRow key={row.username} noValidate>
+                    <TableCell align="center">
+                      <TextField margin="normal" defaultValue={row.username} fullWidth id={row.username} name={row.username} disabled={row.editDisabled}></TextField>
+                    </TableCell>
+                    <TableCell align="center">
+                      <TextField margin="normal" defaultValue={row.email} fullWidth id={row.username + "_email"} name={row.username + "_email"} disabled={row.editDisabled}></TextField>
+                    </TableCell>
+                    <TableCell align="center">
+                      <TextField margin="normal" fullWidth id={row.username + "_password"} name={row.username + "_password"} disabled={row.editDisabled}></TextField>
+                    </TableCell>
+                    <TableCell align="center">
+                      <TextField margin="normal" defaultValue={row.group_list} fullWidth id={row.username + "_group_list"} name={row.username + "_group_list"} disabled={row.editDisabled}></TextField>
+                    </TableCell>
+                    <TableCell align="center">{row.is_disabled === 0 ? "Active" : "Disabled "}</TableCell>
+                    <TableCell align="center">
+                      <Button variant="outlined" onClick={event => handleSubmit(event, row)} id={row.username + "_button"}>
+                        {row.editDisabled === true ? "Edit" : "Save"}
+                      </Button>
+                      <Button variant="outlined">{row.is_disabled === 0 ? "Disable" : "Activate"}</Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -141,5 +182,5 @@ export default function AdminHome() {
         </Container>
       </main>
     </ThemeProvider>
-  );
+  )
 }

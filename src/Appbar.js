@@ -1,65 +1,70 @@
-import * as React from "react";
-import AppBar from "@mui/material/AppBar";
-import Button from "@mui/material/Button";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
+import * as React from "react"
+import AppBar from "@mui/material/AppBar"
+import Button from "@mui/material/Button"
+import Toolbar from "@mui/material/Toolbar"
+import Typography from "@mui/material/Typography"
+import { useState, useEffect } from "react"
+import axios from "axios"
+import Cookies from "js-cookie"
+import { useNavigate } from "react-router-dom"
 
 export default function Appbar(props) {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
+  const config = {
+    headers: {
+      Authorization: "Bearer " + Cookies.get("token")
+    }
+  }
   //Check Login
   useEffect(() => {
     const checkLogin = async () => {
-      const token = { token: Cookies.get("token") }.token;
-      const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", { params: { token: token } });
+      const token = { token: Cookies.get("token") }.token
+      const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", config)
       if (!isLogin.data) {
-        navigate("/");
+        navigate("/")
       }
-    };
-    checkLogin();
-  }, []);
+    }
+    checkLogin()
+  }, [])
 
   //check Group
   useEffect(() => {
-    const checkGroup = async (group) => {
-      const username = { username: Cookies.get("username") }.username;
-      const checkGroup = await axios.get("http://localhost:8080/controller/checkGroup", { params: { username: username, group: group } });
+    const checkGroup = async group => {
+      const checkGroup = await axios.post("http://localhost:8080/controller/checkGroup", { group: group }, config)
+      console.log(checkGroup)
       if (!checkGroup.data) {
-        navigate("/");
+        navigate("/")
       }
-    };
-    if (props.group === "admin") {
-      checkGroup("admin");
     }
-  }, []);
+    if (props.group === "admin") {
+      checkGroup("admin")
+    }
+  }, [])
 
   //home
   const homePage = () => {
     if (props.group === "admin") {
-      navigate("/adminhome");
+      navigate("/adminhome")
     } else {
-      navigate("/home");
+      navigate("/home")
     }
-  };
+  }
 
   //myaccount
   const myAccount = () => {
-    navigate("/myaccount", { state: { group: props.group } });
-  };
+    navigate("/myaccount", { state: { group: props.group } })
+  }
 
   //logout
   const logOut = () => {
     const config = {
       headers: {
-        Authorization: "Bearer " + Cookies.get("token"),
-      },
-    };
-    axios.get("http://localhost:8080/controller/_logout", config);
-    navigate("/");
-  };
+        Authorization: "Bearer " + Cookies.get("token")
+      }
+    }
+    axios.get("http://localhost:8080/controller/_logout", config)
+    navigate("/")
+  }
 
   return (
     <AppBar position="relative">
@@ -80,5 +85,5 @@ export default function Appbar(props) {
         </Button>
       </Toolbar>
     </AppBar>
-  );
+  )
 }
