@@ -69,7 +69,7 @@ export default function MyAccount() {
           const updatePassword = { password: data.get("password") };
 
           await axios.put(
-            "http://localhost:8080/controller/updateUserPassword/" + Cookies.get("username"),
+            "http://localhost:8080/controller/updateUserPassword/",
             updatePassword,
             config
           );
