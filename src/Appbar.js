@@ -9,17 +9,16 @@ import Cookies from "js-cookie"
 import { useNavigate } from "react-router-dom"
 
 export default function Appbar(props) {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const config = {
     headers: {
-      Authorization: "Bearer " + Cookies.get("token")
-    }
-  }
+      Authorization: "Bearer " + Cookies.get("token"),
+    },
+  };
   //Check Login
   useEffect(() => {
     const checkLogin = async () => {
-      const token = { token: Cookies.get("token") }.token
-      const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", config)
+      const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", config);
       if (!isLogin.data) {
         navigate("/")
       }
@@ -29,9 +28,12 @@ export default function Appbar(props) {
 
   //check Group
   useEffect(() => {
-    const checkGroup = async group => {
-      const checkGroup = await axios.post("http://localhost:8080/controller/checkGroup", { group: group }, config)
-      console.log(checkGroup)
+    const checkGroup = async (group) => {
+      const checkGroup = await axios.post(
+        "http://localhost:8080/controller/checkGroup",
+        { group: group },
+        config
+      );
       if (!checkGroup.data) {
         navigate("/")
       }
@@ -57,14 +59,9 @@ export default function Appbar(props) {
 
   //logout
   const logOut = () => {
-    const config = {
-      headers: {
-        Authorization: "Bearer " + Cookies.get("token")
-      }
-    }
-    axios.get("http://localhost:8080/controller/_logout", config)
-    navigate("/")
-  }
+    axios.get("http://localhost:8080/controller/_logout", config);
+    navigate("/");
+  };
 
   return (
     <AppBar position="relative">
