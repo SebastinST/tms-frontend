@@ -10,11 +10,15 @@ import { useNavigate } from "react-router-dom";
 
 export default function Appbar(props) {
   const navigate = useNavigate();
+  const config = {
+    headers: {
+      Authorization: "Bearer " + Cookies.get("token"),
+    },
+  };
   //Check Login
   useEffect(() => {
     const checkLogin = async () => {
-      const token = { token: Cookies.get("token") }.token;
-      const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", { params: { token: token } });
+      const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", config);
       if (!isLogin.data) {
         navigate("/");
       }
@@ -25,8 +29,11 @@ export default function Appbar(props) {
   //check Group
   useEffect(() => {
     const checkGroup = async (group) => {
-      const username = { username: Cookies.get("username") }.username;
-      const checkGroup = await axios.get("http://localhost:8080/controller/checkGroup", { params: { username: username, group: group } });
+      const checkGroup = await axios.post(
+        "http://localhost:8080/controller/checkGroup",
+        { group: group },
+        config
+      );
       if (!checkGroup.data) {
         navigate("/");
       }
@@ -52,11 +59,6 @@ export default function Appbar(props) {
 
   //logout
   const logOut = () => {
-    const config = {
-      headers: {
-        Authorization: "Bearer " + Cookies.get("token"),
-      },
-    };
     axios.get("http://localhost:8080/controller/_logout", config);
     navigate("/");
   };

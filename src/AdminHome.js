@@ -24,6 +24,8 @@ import { KeyboardEventHandler } from "react";
 import CreatableSelect from "react-select/creatable";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import TextField from "@mui/material/TextField";
+import Select from "react-select";
 
 const defaultTheme = createTheme();
 function createData(name, calories, fat, carbs, protein) {
@@ -51,6 +53,7 @@ export default function AdminHome() {
 
   const [inputValue, setInputValue] = React.useState("");
   const [createValue, setCreateValue] = React.useState([]);
+  const [groupOptions, setGroupOptions] = React.useState([]);
 
   const handleKeyDown = (event) => {
     if (!inputValue) return;
@@ -64,6 +67,9 @@ export default function AdminHome() {
   };
   function getCreateValue(value) {
     return value.createValue;
+  }
+  function getGroupsValue(value) {
+    return { value: value.group_name, label: value.group_name };
   }
 
   //Authorization
@@ -80,9 +86,18 @@ export default function AdminHome() {
       toast.success(res.data.message);
       setCreateValue([]);
     } catch (error) {
-      toast.error(error);
+      toast.error(error.response.data.errMessage);
     }
   };
+
+  //get groups
+  useEffect(() => {
+    const getGroups = async () => {
+      const groupsList = await axios.get("http://localhost:8080/controller/getGroups", config);
+      setGroupOptions(groupsList.data.data.map(getGroupsValue));
+    };
+    getGroups();
+  }, []);
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -98,7 +113,18 @@ export default function AdminHome() {
               alignItems: "center",
             }}
           >
-            <ToastContainer position="top-center" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="light" />
+            <ToastContainer
+              position="top-center"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+            />
             <Grid container spacing={2}>
               <Grid item xs={8}></Grid>
               <Grid item xs={2}>
@@ -133,8 +159,56 @@ export default function AdminHome() {
                 </TableRow>
               </TableHead>
               <TableBody>
+                <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+                  <TableCell align="center">
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="username"
+                      label="Username"
+                      name="username"
+                      autoFocus
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="email"
+                      label="Email"
+                      name="email"
+                      autoFocus
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      name="password"
+                      label="Password"
+                      type="password"
+                      id="password"
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <Select
+                      isMulti
+                      name="colors"
+                      options={groupOptions}
+                      className="basic-multi-select"
+                      classNamePrefix="select"
+                    />
+                  </TableCell>
+                  <TableCell align="center">Active</TableCell>
+                </TableRow>
                 {rows.map((row) => (
-                  <TableRow key={row.name} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+                  <TableRow
+                    key={row.name}
+                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                  >
                     <TableCell align="center">{row.name}</TableCell>
                     <TableCell align="center">{row.calories}</TableCell>
                     <TableCell align="center">{row.fat}</TableCell>
