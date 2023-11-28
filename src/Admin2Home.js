@@ -268,6 +268,7 @@ export default function Admin2Home() {
             </TableCell>
             <TableCell align="center">
               <Select
+                isDisabled={item.editDisabled}
                 onChange={event =>
                   //combine the values into a comma separated string
                   setTable(
