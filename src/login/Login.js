@@ -1,15 +1,17 @@
 import './Login.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
+
+import Checkgroup from '../components/Checkgroup';
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function Login() {
-    const [inputs, setInputs] = useState({});
     const navigate = useNavigate();
+    const [inputs, setInputs] = useState({});
 
     const handleChange = (event) => {
         const name = event.target.name;
@@ -24,12 +26,9 @@ function Login() {
             
             // Add token to current user (result.data.token)
             Cookies.set('jwt-token', result.data.token)
-
-            // Take note of groups of logged in user (result.data.group_list)
-            Cookies.set('group_list', result.data.group_list)
-                
+            
             // If admin, route to admin
-            if (Cookies.get('group_list').includes("admin")) {
+            if (await Checkgroup("admin")) {
                 navigate("/admin");
             } else {
                 // Else route to user
@@ -47,6 +46,21 @@ function Login() {
             }
         }
     }
+
+    useEffect(() => {
+        async function redirect() {
+            if (Cookies.get('jwt-token')) {
+                // If admin, route to admin
+                if (await Checkgroup("admin")) {
+                    navigate("/admin");
+                } else {
+                    // Else route to user
+                    navigate("/user");
+                }
+            }
+        }
+        redirect();
+    }, [navigate]);
     
     return (
         <form onSubmit={handleSubmit} className="login-form">

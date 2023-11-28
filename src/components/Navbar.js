@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Axios from 'axios';
 import Cookies from 'js-cookie';
 
+import Checkgroup from '../components/Checkgroup';
+
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './Navbar.css';
@@ -16,7 +18,6 @@ function Navbar() {
                 headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}` }
             });
             Cookies.remove('jwt-token');
-            Cookies.remove('group_list');
 
             navigate("/");
         } catch (e) {
@@ -31,12 +32,24 @@ function Navbar() {
         }
     }
 
+    const backToHome = async() => {
+        if (Cookies.get('jwt-token')) {
+            // If admin, route to admin
+            if (await Checkgroup("admin")) {
+                navigate("/admin");
+            } else {
+                // Else route to user
+                navigate("/user");
+            }
+        }
+    }
+
     return (
         <>
         <div className="navbar">
-            <Link to={Cookies.get('group_list').includes("admin") ? "/admin" : "/user"}>
+            <button onClick={backToHome}>
                 <span className="title">TMS</span>
-            </Link>
+            </button>
             <div className="buttons">
                 <button type="button">
                     <Link to='/profile'>
