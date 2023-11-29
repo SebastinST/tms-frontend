@@ -6,7 +6,10 @@ import Cookies from 'js-cookie';
 // External Aesthetics
 import { toast } from 'react-toastify';
 
-function AddGroup() {
+function AddGroup(props) {
+    const {
+        setRefreshGroups
+    } = props;
     // createGroup to add groupname
     const [groupname, setGroupname] = useState({});
 
@@ -25,6 +28,7 @@ function AddGroup() {
             if (result) {
                 toast.success(result.data.message);
                 setGroupname({});
+                setRefreshGroups(true);
             }
             
         } catch (e) {

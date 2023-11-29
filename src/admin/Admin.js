@@ -15,10 +15,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function User() {
-    
-    // createUser to add new user and refresh users
-    // updateUser to edit and update user details and refresh users
-        // allow user to update certain fields (eg. is_disabled)
+    const [refreshGroups, setRefreshGroups] = useState(false);
+    const [refreshUsers, setRefreshUsers] = useState(false);
     const [users, setUsers] = useState([]);
 
     // getAllUsers to display users details and refresh when changed, show latest on top
@@ -42,10 +40,18 @@ function User() {
             }
         }
         getAllUsers();
-    }, []);
+        setRefreshUsers(false);
+    }, [refreshUsers]);
     const userRows = users.map(user => {
         return (
-            <EditUser user={user} id={user.username}/>        
+            <EditUser 
+                id={user.username}
+                user={user} 
+                refreshGroups={refreshGroups} 
+                setRefreshGroups={setRefreshGroups}
+                refreshUsers={refreshUsers}
+                setRefreshUsers={setRefreshUsers}
+            />        
         );
     });
 
@@ -53,8 +59,12 @@ function User() {
         <>
         <Navbar />
         <div className="admin-ui">
-            <AddGroup />
-            <AddUser />
+            <AddGroup setRefreshGroups={setRefreshGroups} />
+            <AddUser 
+                refreshGroups={refreshGroups} 
+                setRefreshGroups={setRefreshGroups}
+                setRefreshUsers={setRefreshUsers}
+            />
             <div className="users-container">
                 {userRows}
             </div>  
