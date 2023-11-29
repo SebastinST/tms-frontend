@@ -1,16 +1,10 @@
-// Internal
-import './Admin.css';
-
 // External Functional
 import { useState } from 'react';
 import Axios from 'axios';
 import Cookies from 'js-cookie';
 
 // External Aesthetics
-import CreatableSelect from 'react-select/creatable';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
+import { toast } from 'react-toastify';
 
 function AddGroup() {
     // createGroup to add groupname
@@ -30,6 +24,7 @@ function AddGroup() {
             );
             if (result) {
                 toast.success(result.data.message);
+                setGroupname({});
             }
             
         } catch (e) {
@@ -45,13 +40,10 @@ function AddGroup() {
     }
 
     return (
-        <>
         <form onSubmit={handleSubmit} className="add-group">
             <input type="text" name="groupname" value={groupname.group_name || ""} onChange={handleChange} placeholder='Group Name'/>
             <input type="submit" value="Create New Group"/>
         </form>
-        <ToastContainer closeOnClick theme="colored"/>
-        </>
     )
 }
 
