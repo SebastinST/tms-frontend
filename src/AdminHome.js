@@ -216,7 +216,7 @@ export default function AdminHome() {
       setItem(prevState => {
         let newItem = { type: props.id, content: newValue }
 
-        props.onChange(newItem)
+        props.onChange(props.index, newItem)
 
         return newValue
       })
@@ -228,7 +228,7 @@ export default function AdminHome() {
 
     useEffect(() => {})
 
-    const onInputChange = item => {
+    const onInputChange = (index, item) => {
       state[item.type] = item.content
     }
 

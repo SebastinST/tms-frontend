@@ -79,7 +79,6 @@ export default function AdminHome() {
 
   async function handleSubmit(e, row) {
     e.preventDefault()
-    console.log(row)
     //strip the _button from the id
     const id = e.target.id.replace("_button", "")
     const disabled = table.find(row => row.username === id).editDisabled
@@ -97,8 +96,6 @@ export default function AdminHome() {
       //get the values for the row from the table state
       const email = table.find(row => row.username === id).email
       const password = table.find(row => row.username === id).password
-      console.log(email)
-      console.log(password)
       const body = {}
       if (email !== "" && email !== undefined) {
         body.email = email
