@@ -14,11 +14,8 @@ function ValidateUser({children, group}) {
     
     // If group is defined, check user
     if (group) {
-        Checkgroup(group)
-        .then(function(result) {
-            if (result) {
-                return (<>{children}</>);
-            } else {        
+        Checkgroup(group).then(function(result) {
+            if (!result) {
                 // User is not authorised
                 // FIX if got time
                 navigate("/");
@@ -26,14 +23,10 @@ function ValidateUser({children, group}) {
                 return;
             }
         })
-    } else {
-        // Allow user to access
-        return (
-            <>{children}</>
-        );
     }
 
-    
+    // Allow user to access
+    return (<>{children}</>);
 }
 
 export default ValidateUser;
