@@ -1,10 +1,10 @@
 import Cookies from 'js-cookie';
-import { Navigate, navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 import Checkgroup from '../components/Checkgroup';
 
 function ValidateUser({children, group}) {
-
+    const navigate = useNavigate();
     const token = Cookies.get('jwt-token');
 
     // User not logged in
@@ -12,7 +12,6 @@ function ValidateUser({children, group}) {
         return (<Navigate to="/" replace />);
     }
     
-    // FIX HERE FOR ADMIN PAGE
     // If group is defined, check user
     if (group) {
         Checkgroup(group)
@@ -21,16 +20,20 @@ function ValidateUser({children, group}) {
                 return (<>{children}</>);
             } else {        
                 // User is not authorised
-                alert("rejecting");
-                return (<Navigate to="/" replace />);
+                // FIX if got time
+                navigate("/");
+                // return (<Navigate to="/" replace />);
+                return;
             }
         })
+    } else {
+        // Allow user to access
+        return (
+            <>{children}</>
+        );
     }
 
-    // Allow user to access
-    return (
-        <>{children}</>
-    );
+    
 }
 
 export default ValidateUser;
