@@ -2,30 +2,24 @@ import * as React from "react"
 import Button from "@mui/material/Button"
 import CssBaseline from "@mui/material/CssBaseline"
 import Grid from "@mui/material/Grid"
-import Stack from "@mui/material/Stack"
 import Box from "@mui/material/Box"
-import Toolbar from "@mui/material/Toolbar"
-import Typography from "@mui/material/Typography"
 import Container from "@mui/material/Container"
-import Link from "@mui/material/Link"
 import { createTheme, ThemeProvider } from "@mui/material/styles"
 import { useState, useEffect } from "react"
 import axios from "axios"
 import Cookies from "js-cookie"
-import { useNavigate } from "react-router-dom"
 import Appbar from "./Appbar"
 import Table from "@mui/material/Table"
 import TableBody from "@mui/material/TableBody"
 import TableCell from "@mui/material/TableCell"
-import TableContainer from "@mui/material/TableContainer"
 import TableHead from "@mui/material/TableHead"
 import TableRow from "@mui/material/TableRow"
 import { TextField } from "@mui/material"
-import { KeyboardEventHandler } from "react"
 import CreatableSelect from "react-select/creatable"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import Select from "react-select"
+import DispatchContext from "./DispatchContext"
 
 const defaultTheme = createTheme()
 const components = {
@@ -38,8 +32,6 @@ const createOption = label => ({
 })
 
 export default function AdminHome() {
-  const navigate = useNavigate()
-
   const [inputValue, setInputValue] = React.useState("")
   const [createValue, setCreateValue] = React.useState([])
   const [users, setUsers] = useState({
@@ -51,6 +43,7 @@ export default function AdminHome() {
   })
   const [table, setTable] = useState([])
   const [groupOptions, setGroupOptions] = React.useState([])
+  const appDispatch = React.useContext(DispatchContext)
 
   const handleKeyDown = event => {
     if (!inputValue) return
@@ -64,13 +57,17 @@ export default function AdminHome() {
   }
 
   async function fetchData() {
-    const res = await axios.get("http://localhost:8080/controller/getUsers/", config)
-    //set users to table default edit disabled
-    setTable(
-      res.data.data.map(user => {
-        return { ...user, editDisabled: true, password: "" }
-      })
-    )
+    try {
+      const res = await axios.get("http://localhost:8080/controller/getUsers/", config)
+      //set users to table default edit disabled
+      setTable(
+        res.data.data.map(user => {
+          return { ...user, editDisabled: true, password: "" }
+        })
+      )
+    } catch (err) {
+      appDispatch({ type: err.response.status.toString() })
+    }
   }
 
   function getCreateValue(value) {
@@ -79,7 +76,6 @@ export default function AdminHome() {
 
   async function handleSubmit(e, row) {
     e.preventDefault()
-    console.log(row)
     //strip the _button from the id
     const id = e.target.id.replace("_button", "")
     const disabled = table.find(row => row.username === id).editDisabled
@@ -97,14 +93,16 @@ export default function AdminHome() {
       //get the values for the row from the table state
       const email = table.find(row => row.username === id).email
       const password = table.find(row => row.username === id).password
-      console.log(email)
-      console.log(password)
+      const group_list = table.find(row => row.username === id).group_list
       const body = {}
       if (email !== "" && email !== undefined) {
         body.email = email
       }
       if (password !== "" && password !== undefined) {
         body.password = password
+      }
+      if (group_list !== "" && group_list !== undefined) {
+        body.group = group_list
       }
       try {
         const response = await axios.put("http://localhost:8080/controller/updateUser/" + row.username, body, config)
@@ -119,7 +117,7 @@ export default function AdminHome() {
           })
         )
       } catch (e) {
-        toast.error(e.response.data.errMessage)
+        appDispatch({ type: e.response.status.toString() })
       }
     }
   }
@@ -139,11 +137,13 @@ export default function AdminHome() {
         })
       )
     } catch (e) {
-      toast.error(e.response.data.errMessage)
+      appDispatch({ type: e.response.status.toString() })
     }
   }
 
-  function createUser(e) {
+  async function createUser(e) {
+    //we need to reinit the config incase the token has changed
+    config.headers.Authorization = "Bearer " + Cookies.get("token")
     e.preventDefault()
     const body = {
       username: users.username,
@@ -152,8 +152,8 @@ export default function AdminHome() {
       password: users.password
     }
     try {
-      axios.post("http://localhost:8080/controller/register", body, config)
-      toast.success("User created")
+      const res = await axios.post("http://localhost:8080/controller/register", body, config)
+      toast.success(res.data.message)
       setUsers({
         username: "",
         email: "",
@@ -162,8 +162,8 @@ export default function AdminHome() {
         is_disabled: 0
       })
       fetchData()
-    } catch (e) {
-      toast.error(e.response.data.errMessage)
+    } catch (err) {
+      appDispatch({ type: err.response.status.toString() })
     }
   }
 
@@ -177,6 +177,7 @@ export default function AdminHome() {
       Authorization: "Bearer " + Cookies.get("token")
     }
   }
+
   const createGroup = async event => {
     event.preventDefault()
     try {
@@ -186,24 +187,149 @@ export default function AdminHome() {
       setCreateValue([])
       getGroups()
     } catch (error) {
-      toast.error(error.response.data.errMessage)
+      appDispatch({ type: error.response.status.toString() })
     }
   }
 
   //Run once on page load
   //use Axios to get all users
-
   useEffect(() => {
     fetchData()
-  }, [])
-  const getGroups = async () => {
-    const groupsList = await axios.get("http://localhost:8080/controller/getGroups", config)
-    setGroupOptions(groupsList.data.data.map(getGroupsValue))
-  }
-  //get groups
-  useEffect(() => {
     getGroups()
   }, [])
+
+  const getGroups = async () => {
+    try {
+      const res = await axios.get("http://localhost:8080/controller/getGroups", config)
+      setGroupOptions(res.data.data.map(getGroupsValue))
+    } catch (err) {
+      appDispatch({ type: err.response.status.toString() })
+    }
+  }
+
+  function Child(props) {
+    useEffect(() => {})
+    const [item, setItem] = useState(props.item)
+
+    const onChange = event => {
+      let newValue = event.target.value
+      setItem(prevState => {
+        let newItem = { type: props.id, content: newValue }
+
+        props.onChange(newItem)
+
+        return newValue
+      })
+    }
+    return <TextField value={item} onChange={onChange} margin="normal" fullWidth disabled={props.disabled} type={props.id}></TextField>
+  }
+  function CreateRow(props) {
+    const [state, setState] = useState(users, [])
+
+    useEffect(() => {})
+
+    const onInputChange = item => {
+      state[item.type] = item.content
+    }
+
+    return (
+      <>
+        <TableRow key={state.username} noValidate>
+          <TableCell align="center">
+            <Child id={"username"} item={state.username} onChange={onInputChange} disabled={false} />
+          </TableCell>
+          <TableCell align="center">
+            <Child id={"email"} item={state.email} onChange={onInputChange} disabled={false} />
+          </TableCell>
+          <TableCell align="center">
+            <Child id={"password"} item={state.password} onChange={onInputChange} disabled={false} />
+          </TableCell>
+          <TableCell align="center">
+            <Select
+              onChange={event =>
+                //combine the values into a comma separated string
+                setUsers({
+                  ...users,
+                  group_list: event.map(group => group.value).join(",")
+                })
+              }
+              isMulti
+              name="colors"
+              options={groupOptions}
+              className="basic-multi-select"
+              classNamePrefix="select"
+              //read from users.group_list and match exactly
+              value={groupOptions.filter(option => users.group_list.split(",").includes(option.value))}
+            />
+          </TableCell>
+          <TableCell align="center">Active</TableCell>
+          <TableCell align="center">
+            <Button variant="outlined" onClick={createUser}>
+              Create
+            </Button>
+          </TableCell>
+        </TableRow>
+      </>
+    )
+  }
+
+  function Parent(props) {
+    const [state, setState] = useState(table, [])
+
+    useEffect(() => {})
+
+    const onInputChange = (index, item) => {
+      state[index][item.type] = item.content
+    }
+
+    return (
+      <>
+        {state.map((item, index) => (
+          <TableRow key={item.username} noValidate>
+            <TableCell align="center">{item.username}</TableCell>
+            <TableCell align="center">
+              <Child id={"email"} item={item.email} index={index} onChange={onInputChange} disabled={item.editDisabled} />
+            </TableCell>
+            <TableCell align="center">
+              <Child id={"password"} item={item.password} index={index} onChange={onInputChange} disabled={item.editDisabled} />
+            </TableCell>
+            <TableCell align="center">
+              <Select
+                isDisabled={item.editDisabled}
+                onChange={event =>
+                  //combine the values into a comma separated string
+                  setTable(
+                    table.map(row => {
+                      if (row.username === item.username) {
+                        row.group_list = event.map(group => group.value).join(",")
+                      }
+                      return row
+                    })
+                  )
+                }
+                isMulti
+                name="colors"
+                options={groupOptions}
+                className="basic-multi-select"
+                classNamePrefix="select"
+                //read from users.group_list and match exactly
+                value={groupOptions.filter(option => item.group_list.split(",").includes(option.value))}
+              />
+            </TableCell>
+            <TableCell align="center">{item.is_disabled === 0 ? "Active" : "Disabled"}</TableCell>
+            <TableCell align="center">
+              <Button id={item.username + "_button"} variant="outlined" onClick={e => handleSubmit(e, item)}>
+                {item.editDisabled ? "Edit" : "Save"}
+              </Button>
+              <Button id={item.username + "_button"} variant="outlined" onClick={e => handleDisable(e, item)}>
+                {item.is_disabled === 0 ? "Disable" : "Enable"}
+              </Button>
+            </TableCell>
+          </TableRow>
+        ))}
+      </>
+    )
+  }
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -243,144 +369,9 @@ export default function AdminHome() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-                  <TableCell align="center">
-                    <TextField
-                      onChange={event =>
-                        setUsers({
-                          ...users,
-                          username: event.target.value
-                        })
-                      }
-                      margin="normal"
-                      required
-                      fullWidth
-                      id="username"
-                      label="Username"
-                      name="username"
-                      autoFocus
-                      value={users.username}
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    <TextField
-                      onChange={event =>
-                        setUsers({
-                          ...users,
-                          email: event.target.value
-                        })
-                      }
-                      margin="normal"
-                      required
-                      fullWidth
-                      id="email"
-                      label="Email"
-                      name="email"
-                      autoFocus
-                      value={users.email}
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    <TextField
-                      onChange={event =>
-                        setUsers({
-                          ...users,
-                          password: event.target.value
-                        })
-                      }
-                      margin="normal"
-                      required
-                      fullWidth
-                      name="password"
-                      label="Password"
-                      type="password"
-                      id="password"
-                      value={users.password}
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Select
-                      onChange={event =>
-                        //combine the values into a comma separated string
-                        setUsers({
-                          ...users,
-                          group_list: event.map(group => group.value).join(",")
-                        })
-                      }
-                      isMulti
-                      name="colors"
-                      options={groupOptions}
-                      className="basic-multi-select"
-                      classNamePrefix="select"
-                      //read from users.group_list and match exactly
-                      value={groupOptions.filter(option => users.group_list.split(",").includes(option.value))}
-                    />
-                  </TableCell>
-                  <TableCell align="center">Active</TableCell>
-                  <TableCell align="center">
-                    <Button variant="outlined" onClick={createUser}>
-                      Create
-                    </Button>
-                  </TableCell>
-                </TableRow>
-                {table.map(row => (
-                  <TableRow key={row.username} noValidate>
-                    <TableCell align="center">{row.username}</TableCell>
-                    <TableCell align="center">
-                      <TextField
-                        margin="normal"
-                        onChange={e =>
-                          setTable(
-                            table.map(row => {
-                              if (row.username === e.target.id.replace("_email", "")) {
-                                row.email = e.target.value
-                              }
-                              return row
-                            })
-                          )
-                        }
-                        value={row.email}
-                        fullWidth
-                        id={row.username + "_email"}
-                        name={row.username + "_email"}
-                        disabled={row.editDisabled}
-                      ></TextField>
-                    </TableCell>
-                    <TableCell align="center">
-                      <TextField
-                        margin="normal"
-                        value={row.password}
-                        onChange={e =>
-                          setTable(
-                            table.map(row => {
-                              if (row.username === e.target.id.replace("_password", "")) {
-                                row.password = e.target.value
-                              }
-                              return row
-                            })
-                          )
-                        }
-                        fullWidth
-                        id={row.username + "_password"}
-                        type="password"
-                        name={row.username + "_password"}
-                        disabled={row.editDisabled}
-                      ></TextField>
-                    </TableCell>
-                    <TableCell align="center">
-                      <TextField margin="normal" defaultValue={row.group_list} fullWidth id={row.username + "_group_list"} name={row.username + "_group_list"} disabled={row.editDisabled}></TextField>
-                    </TableCell>
-                    <TableCell align="center">{row.is_disabled === 0 ? "Active" : "Disabled "}</TableCell>
-                    <TableCell align="center">
-                      <Button variant="outlined" onClick={event => handleSubmit(event, row)} id={row.username + "_button"}>
-                        {row.editDisabled === true ? "Edit" : "Save"}
-                      </Button>
-                      <Button variant="outlined" onClick={event => handleDisable(event, row)}>
-                        {row.is_disabled === 0 ? "Disable" : "Activate"}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                <CreateRow />
+
+                <Parent />
               </TableBody>
             </Table>
           </Box>

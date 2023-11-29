@@ -7,41 +7,64 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import Cookies from "js-cookie"
 import { useNavigate } from "react-router-dom"
+import { ToastContainer, toast } from "react-toastify"
 
 export default function Appbar(props) {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   const config = {
     headers: {
-      Authorization: "Bearer " + Cookies.get("token"),
-    },
-  };
-  //Check Login
-  useEffect(() => {
-    const checkLogin = async () => {
-      const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", config);
-      if (!isLogin.data) {
-        navigate("/")
-      }
+      Authorization: "Bearer " + Cookies.get("token")
     }
-    checkLogin()
-  }, [])
+  }
 
-  //check Group
-  useEffect(() => {
-    const checkGroup = async (group) => {
-      const checkGroup = await axios.post(
-        "http://localhost:8080/controller/checkGroup",
-        { group: group },
-        config
-      );
-      if (!checkGroup.data) {
+  function OnLoad() {
+    const [isLogged, setIsLogged] = useState(null)
+    const [isGroup, setIsGroup] = useState(null)
+
+    useEffect(() => {
+      const getLogin = async () => {
+        try {
+          const login = await axios.get("http://localhost:8080/controller/checkLogin", config)
+          setIsLogged(login.data)
+        } catch (err) {
+          if (err.response.status === 401) {
+            navigate("/")
+          }
+        }
+      }
+
+      const getGroup = async group => {
+        if (group !== undefined && group !== null && group !== "") {
+          try {
+            const res = await axios.post("http://localhost:8080/controller/checkGroup", { group: group }, config)
+            setIsGroup(res.data)
+          } catch (err) {
+            if (err.response.status === 401) {
+              navigate("/")
+            }
+          }
+        }
+      }
+
+      getLogin().then(getGroup(props.group))
+    }, [])
+
+    useEffect(() => {
+      if (isLogged === false) {
+        console.log("not logged")
         navigate("/")
       }
-    }
-    if (props.group === "admin") {
-      checkGroup("admin")
-    }
-  }, [])
+    }, [isLogged])
+
+    useEffect(() => {
+      if (isGroup === false) {
+        console.log("not admin")
+        navigate("/home")
+      }
+    }, [isGroup])
+  }
+
+  OnLoad()
 
   //home
   const homePage = () => {
@@ -59,9 +82,10 @@ export default function Appbar(props) {
 
   //logout
   const logOut = () => {
-    axios.get("http://localhost:8080/controller/_logout", config);
-    navigate("/");
-  };
+    axios.get("http://localhost:8080/controller/_logout", config)
+    Cookies.remove("token")
+    navigate("/")
+  }
 
   return (
     <AppBar position="relative">
