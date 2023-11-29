@@ -2,6 +2,8 @@
 import './Admin.css';
 import Navbar from '../components/Navbar';
 import AddGroup from './AddGroup';
+import AddUser from './AddUser';
+import EditUser from './EditUser';
 
 // External Functional
 import { useState, useEffect } from 'react';
@@ -9,8 +11,6 @@ import Axios from 'axios';
 import Cookies from 'js-cookie';
 
 // External Aesthetics
-import Select from 'react-select';
-
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -45,29 +45,7 @@ function User() {
     }, []);
     const userRows = users.map(user => {
         return (
-        <tr>
-            <td>
-                {user.username}
-            </td>
-            <td>
-                {user.email}
-            </td>
-            <td>
-                **********
-            </td>
-            <td>
-                {user.group_list}
-            </td>
-            <td>
-                {user.is_disabled ? 'Disabled' : 'Active'}
-            </td>
-            <td>
-                <div className="users-buttons">
-                    <input type="submit" value="Edit"/>
-                    <input type="submit" value="Disable"/>
-                </div>
-            </td>
-        </tr>
+            <EditUser user={user} id={user.username}/>        
         );
     });
 
@@ -76,43 +54,10 @@ function User() {
         <Navbar />
         <div className="admin-ui">
             <AddGroup />
-            <div className='users-container'>
-                <table className="users-table">
-                        <thead>
-                            <tr>
-                                <th>Username</th>
-                                <th>Email</th>
-                                <th>Password</th>
-                                <th>Group</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <input type="text" placeholder='Username'/>
-                                </td>
-                                <td>
-                                    <input type="text" placeholder='Email'/>
-                                </td>
-                                <td>
-                                    <input type="text" placeholder='Password'/>
-                                </td>
-                                <td>
-                                    <input type="text" placeholder='dev, admin'/>
-                                </td>
-                                <td>
-                                    Active
-                                </td>
-                                <td>
-                                    <input type="submit" value="Create New User"/>
-                                </td>
-                            </tr>
-                            {userRows}
-                        </tbody>
-                </table>
-            </div>
+            <AddUser />
+            <div className="users-container">
+                {userRows}
+            </div>  
         </div>
         <ToastContainer closeOnClick theme="colored"/>
         </>
