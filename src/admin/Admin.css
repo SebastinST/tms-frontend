@@ -14,6 +14,10 @@
     gap: 20px;
 }
 
+.add-user-form {
+    margin-right: 10px;
+}
+
 .users-table {
     width: stretch;
     border: 2px solid black;
@@ -45,6 +49,11 @@
     display: flex;
     justify-content: space-around;
 } 
+
+.group-button {
+    pointer-events: none;
+    margin-right: 5px;
+}
 
 /* width */
 ::-webkit-scrollbar {

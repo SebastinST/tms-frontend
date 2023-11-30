@@ -46,9 +46,8 @@ function User() {
             <EditUser 
                 id={user.username}
                 user={user} 
-                refreshGroups={refreshGroups} 
+                refreshGroups={refreshGroups}
                 setRefreshGroups={setRefreshGroups}
-                refreshUsers={refreshUsers}
                 setRefreshUsers={setRefreshUsers}
             />        
         );
