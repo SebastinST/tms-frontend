@@ -18,6 +18,7 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import Alert from "@mui/material/Alert"
 import { ToastContainer, toast } from "react-toastify"
+import DispatchContext from "./DispatchContext"
 
 const defaultTheme = createTheme()
 
@@ -33,6 +34,7 @@ export default function MyAccount() {
   const [errorMessage, setErrorMessage] = useState("")
   const [open, setOpen] = React.useState(false)
   const { state } = useLocation()
+  const appDispatch = React.useContext(DispatchContext)
   //Authorization
   const config = {
     headers: {
@@ -42,10 +44,14 @@ export default function MyAccount() {
   //get default account values
   useEffect(() => {
     async function fetchData() {
-      const response = await axios.get("http://localhost:8080/controller/getUser/", config)
-      //set password in response to empty
-      response.data.data.password = ""
-      setDefAccInfo(response.data.data)
+      try {
+        const response = await axios.get("http://localhost:8080/controller/getUser/", config)
+        //set password in response to empty
+        response.data.data.password = ""
+        setDefAccInfo(response.data.data)
+      } catch (err) {
+        appDispatch({ type: err.response.status })
+      }
     }
     fetchData()
   }, [])

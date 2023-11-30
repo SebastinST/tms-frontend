@@ -1,12 +1,11 @@
 import Login from "./Login.js"
 import Home from "./Home.js"
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { Routes, Route } from "react-router-dom"
 import AdminHome from "./AdminHome.js"
 import MyAccount from "./MyAccount.js"
-import { createContext, useReducer } from "react"
+import { useReducer } from "react"
 import DispatchContext from "./DispatchContext.js"
 import { useNavigate } from "react-router-dom"
-import { useEffect } from "react"
 
 function App() {
   const navigate = useNavigate()
