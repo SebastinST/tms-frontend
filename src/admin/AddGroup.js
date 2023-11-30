@@ -1,9 +1,7 @@
-// External Functional
+// External
 import { useState } from 'react';
 import Axios from 'axios';
 import Cookies from 'js-cookie';
-
-// External Aesthetics
 import { toast } from 'react-toastify';
 
 function AddGroup(props) {

@@ -5,12 +5,10 @@ import AddGroup from './AddGroup';
 import AddUser from './AddUser';
 import EditUser from './EditUser';
 
-// External Functional
+// External
 import { useState, useEffect } from 'react';
 import Axios from 'axios';
 import Cookies from 'js-cookie';
-
-// External Aesthetics
 import { toast } from 'react-toastify';
 
 function User() {

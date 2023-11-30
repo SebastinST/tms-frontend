@@ -2,8 +2,6 @@
 import { useState, useEffect } from 'react';
 import Axios from 'axios';
 import Cookies from 'js-cookie';
-
-// External Aesthetics
 import Select from "react-select";
 import { toast } from 'react-toastify';
 

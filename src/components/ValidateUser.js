@@ -1,7 +1,9 @@
+// Internal
+import Checkgroup from '../components/Checkgroup';
+
+// External
 import Cookies from 'js-cookie';
 import { Navigate, useNavigate } from "react-router-dom";
-
-import Checkgroup from '../components/Checkgroup';
 
 function ValidateUser({children, group}) {
     const navigate = useNavigate();
@@ -11,6 +13,9 @@ function ValidateUser({children, group}) {
     if (!token) {
         return (<Navigate to="/" replace />);
     }
+
+    // Check if token is valid
+    // By right need to do for every Axios call but now is for page render
     
     // If group is defined, check user
     if (group) {

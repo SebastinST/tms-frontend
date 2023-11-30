@@ -1,13 +1,14 @@
+// Internal
+import './Navbar.css';
+
+// External
 import { Link } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
 import Axios from 'axios';
 import Cookies from 'js-cookie';
 import { useEffect, useState } from 'react';
-
 import Checkgroup from '../components/Checkgroup';
-
 import { toast } from 'react-toastify';
-import './Navbar.css';
 
 function Navbar() {
     const navigate = useNavigate();

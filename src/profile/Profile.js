@@ -1,11 +1,13 @@
 // Add cannot press save if no edits
 
+// Internal
 import './Profile.css';
 import Navbar from '../components/Navbar';
+
+// External
 import { useState, useEffect } from 'react';
 import Axios from 'axios';
 import Cookies from 'js-cookie';
-
 import { toast } from 'react-toastify';
 
 function Profile() {

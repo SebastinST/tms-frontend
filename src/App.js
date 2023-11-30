@@ -2,6 +2,8 @@
 // Check through User Stories
 // Backend catch token verify error (keith)
 // Root admin should not be able to be edited by others
+
+// Internal
 import './App.css';
 import Login from './login/Login';
 import Main from './main/Main';
@@ -9,8 +11,8 @@ import Admin from './admin/Admin';
 import Profile from './profile/Profile';
 import ValidateUser from './components/ValidateUser';
 
+// External
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 

@@ -1,11 +1,11 @@
+// Internal
 import './Login.css';
+
+// External
 import { useState, useEffect } from 'react';
 import Axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
-
-import Checkgroup from '../components/Checkgroup';
-
 import { toast } from 'react-toastify';
 
 function Login() {

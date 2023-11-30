@@ -1,3 +1,4 @@
+// Internal
 import './Main.css';
 import Navbar from '../components/Navbar';
 
