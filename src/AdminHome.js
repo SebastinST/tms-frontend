@@ -101,9 +101,10 @@ export default function AdminHome() {
       if (password !== "" && password !== undefined) {
         body.password = password
       }
-      if (group_list !== "" && group_list !== undefined) {
+      /*if (group_list !== "" && group_list !== undefined) {
         body.group = group_list
-      }
+      }*/
+      body.group = group_list
       try {
         const response = await axios.put("http://localhost:8080/controller/updateUser/" + row.username, body, config)
         toast.success(response.data.message)
@@ -163,6 +164,7 @@ export default function AdminHome() {
       })
       fetchData()
     } catch (err) {
+      toast.error(err.response.data.errMessage)
       appDispatch({ type: err.response.status.toString() })
     }
   }
