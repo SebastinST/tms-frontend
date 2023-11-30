@@ -66,7 +66,7 @@ function EditUser(props) {
         })
         // delete group_list property if empty
         if (group_list === ",") {
-            setInputs(values => ({...values, "group_list": null}));
+            setInputs(values => ({...values, "group_list": ""}));
         } else {
             setInputs(values => ({...values, "group_list": group_list}));
         }
@@ -172,10 +172,9 @@ function EditUser(props) {
                     </td>
                     <td>
                         <div className="users-table-buttons">
-                            {
-                            editing
+                            {editing
                             ?   changedInputs
-                                ? <input type="button" onClick={handleSubmit} value="Save"/>
+                                ? <button type="button" onClick={handleSubmit}>Save</button>
                                 : <button type="button" onClick={toggleEditing}>Cancel</button>
                             :   <button type="button" onClick={toggleEditing}>Edit</button> 
                             }

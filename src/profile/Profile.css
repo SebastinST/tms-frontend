@@ -31,3 +31,8 @@
     flex-grow: 1;
     margin-top: 20px;
 }
+
+.group-button {
+    pointer-events: none;
+    margin-right: 5px;
+}

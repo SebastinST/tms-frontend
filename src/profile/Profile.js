@@ -1,5 +1,3 @@
-// Add cannot press save if no edits
-
 // Internal
 import './Profile.css';
 import Navbar from '../components/Navbar';
@@ -14,6 +12,7 @@ function Profile() {
     const [profile, setProfile] = useState({});
     const [inputs, setInputs] = useState({});
     const [editing, setEditing] = useState(false);
+    const [changedInputs, setChangedInputs] = useState(false);
     
     useEffect(() => {
         async function getSelf() {
@@ -37,9 +36,15 @@ function Profile() {
         getSelf();
     }, [editing]);
 
-    const startEditing = () => {
-        setInputs(values => ({...values, 'email': profile.email}));
-        setEditing(true);
+    const toggleEditing = () => {
+        if (!editing) {
+            setInputs(values => ({...values, 'email': profile.email}));
+            setEditing(true);
+        } else {
+            setEditing(false);
+        }
+        
+        
     }
 
     const handleChange = (event) => {
@@ -47,6 +52,14 @@ function Profile() {
         const value = event.target.value;
         setInputs(values => ({...values, [name]: value}));
     }
+
+    useEffect(() => {
+        if (profile.email === inputs.email && !inputs.password) {
+            setChangedInputs(false);
+        } else {
+            setChangedInputs(true);
+        }
+    }, [inputs])
 
     const handleSubmit = async() => {
         try {
@@ -95,13 +108,14 @@ function Profile() {
                     </div>
                 </div>
                 <div>
-                    <div>User Groups: dev, admin</div>
-                    {editing
-                    ? <input className="profile-submit" type="button" onClick={handleSubmit} value="Save"
-                        {...profile.email === inputs.email && `disabled`}
-                    />
-                    : <button className="profile-submit" type="button" onClick={startEditing}>Edit</button> 
-                    }
+                    <div>User Groups:
+                        {profile.group_list && profile.group_list.slice(1,-1).split(",").map(group => (
+                                <button className="group-button">{group}</button>
+                        ))}
+                    </div>
+                    <button type="button" className="profile-submit" onClick={changedInputs ? handleSubmit : toggleEditing }>
+                        {editing ? changedInputs ? "Save" : "Cancel" : "Edit"}
+                    </button>
                 </div>
             </div>
         </div>
