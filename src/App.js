@@ -7,6 +7,9 @@ import ValidateUser from './components/ValidateUser';
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 function App() {
 
   return (
@@ -22,6 +25,7 @@ function App() {
           </Routes>
         </BrowserRouter>
       </div>
+      <ToastContainer closeOnClick theme="colored"/>
     </div>
   );
 }

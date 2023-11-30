@@ -5,8 +5,7 @@ import Cookies from 'js-cookie';
 
 import Checkgroup from '../components/Checkgroup';
 
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 import './Navbar.css';
 
 function Navbar() {
@@ -61,7 +60,6 @@ function Navbar() {
                 </button>
             </div>
         </div>
-        <ToastContainer closeOnClick theme="colored"/>
         </>
         
     );

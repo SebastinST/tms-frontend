@@ -6,8 +6,7 @@ import { useState, useEffect } from 'react';
 import Axios from 'axios';
 import Cookies from 'js-cookie';
 
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 
 function Profile() {
     const [profile, setProfile] = useState({});
@@ -104,7 +103,6 @@ function Profile() {
                 </div>
             </div>
         </div>
-        <ToastContainer closeOnClick theme="colored"/>
         </>
     );
 }

@@ -11,8 +11,7 @@ import Axios from 'axios';
 import Cookies from 'js-cookie';
 
 // External Aesthetics
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 
 function User() {
     const [refreshGroups, setRefreshGroups] = useState(false);
@@ -69,7 +68,6 @@ function User() {
                 {userRows}
             </div>  
         </div>
-        <ToastContainer closeOnClick theme="colored"/>
         </>
     );
 }

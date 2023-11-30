@@ -6,8 +6,7 @@ import Cookies from 'js-cookie';
 
 import Checkgroup from '../components/Checkgroup';
 
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 
 function Login() {
     const navigate = useNavigate();
@@ -80,7 +79,6 @@ function Login() {
                 onChange={handleChange}
             />
             <input type='submit' value='Sign In' className='submit-button'/>
-            <ToastContainer closeOnClick theme="colored"/>
         </form>
     );
 }
