@@ -58,6 +58,7 @@ function Login() {
                 name="username"
                 value={inputs.username || ""} 
                 onChange={handleChange}
+                required
             />
             <label>Password</label> 
             <input
@@ -65,6 +66,7 @@ function Login() {
                 name="password" 
                 value={inputs.password || ""} 
                 onChange={handleChange}
+                required
             />
             <input type='submit' value='Sign In' className='submit-button'/>
         </form>
