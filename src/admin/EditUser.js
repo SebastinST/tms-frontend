@@ -44,9 +44,11 @@ function EditUser(props) {
                 'email' : user.email, 
                 'group_list' : user.group_list
             }));
-            setSelectedGroups(user.group_list.slice(1,-1).split(",").map(group => (
-                { value: group, label: group }
-            )));
+            if (user.group_list) {
+                setSelectedGroups(user.group_list.slice(1,-1).split(",").map(group => (
+                    { value: group, label: group }
+                )));
+            }
             setEditing(true);
         } else {
             setEditing(false);
