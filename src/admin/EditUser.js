@@ -75,7 +75,7 @@ function EditUser(props) {
     }
 
     useEffect(() => {
-        if (user.email === inputs.email && user.group_list === inputs.group_list) {
+        if (user.email === inputs.email && !inputs.password && user.group_list === inputs.group_list) {
             setChangedInputs(false);
         } else {
             setChangedInputs(true);
@@ -93,6 +93,7 @@ function EditUser(props) {
                 toast.success(result.data.message);
                 setEditing(false);
                 setRefreshUsers(true);
+                setInputs({});
             }
         } catch (e) {
             let error = e.response.data
