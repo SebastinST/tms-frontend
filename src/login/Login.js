@@ -26,13 +26,7 @@ function Login() {
             // Add token to current user (result.data.token)
             Cookies.set('jwt-token', result.data.token)
             
-            // If admin, route to admin
-            if (await Checkgroup("admin")) {
-                navigate("/admin");
-            } else {
-                // Else route to user
-                navigate("/user");
-            }
+            navigate("/main");
             
         } catch (e) {
             let error = e.response.data
@@ -49,13 +43,7 @@ function Login() {
     useEffect(() => {
         async function redirect() {
             if (Cookies.get('jwt-token')) {
-                // If admin, route to admin
-                if (await Checkgroup("admin")) {
-                    navigate("/admin");
-                } else {
-                    // Else route to user
-                    navigate("/user");
-                }
+                navigate("/main");
             }
         }
         redirect();

@@ -1,6 +1,10 @@
+// Handle on request routing
+// Check through User Stories
+// Backend catch token verify error (keith)
+// Root admin should not be able to be edited by others
 import './App.css';
 import Login from './login/Login';
-import User from './user/User';
+import Main from './main/Main';
 import Admin from './admin/Admin';
 import Profile from './profile/Profile';
 import ValidateUser from './components/ValidateUser';
@@ -18,7 +22,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Login />} />
-            <Route path="/user" element={<ValidateUser><User /></ValidateUser>} />
+            <Route path="/main" element={<ValidateUser><Main /></ValidateUser>} />
             <Route path="/admin" element={<ValidateUser group={"admin"}><Admin /></ValidateUser>} />
             <Route path="/profile" element={<ValidateUser><Profile /></ValidateUser>} />
             <Route path="*" element={<Login />} />

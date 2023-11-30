@@ -1,7 +1,7 @@
-import './User.css';
+import './Main.css';
 import Navbar from '../components/Navbar';
 
-function User() {
+function Main() {
     return (
         <>
         <Navbar />
@@ -12,4 +12,4 @@ function User() {
     );
 }
 
-export default User;
+export default Main;
