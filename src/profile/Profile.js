@@ -59,7 +59,7 @@ function Profile() {
         } else {
             setChangedInputs(true);
         }
-    }, [inputs])
+    }, [profile, inputs])
 
     const handleSubmit = async() => {
         try {
@@ -113,9 +113,12 @@ function Profile() {
                                 <button className="group-button">{group}</button>
                         ))}
                     </div>
-                    <button type="button" className="profile-submit" onClick={changedInputs ? handleSubmit : toggleEditing }>
-                        {editing ? changedInputs ? "Save" : "Cancel" : "Edit"}
-                    </button>
+                    {editing
+                    ?   changedInputs
+                        ? <button type="button" onClick={handleSubmit}>Save</button>
+                        : <button type="button" onClick={toggleEditing}>Cancel</button>
+                    :   <button type="button" onClick={toggleEditing}>Edit</button> 
+                    }
                 </div>
             </div>
         </div>
