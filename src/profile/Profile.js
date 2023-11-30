@@ -71,6 +71,7 @@ function Profile() {
             if (result) {
                 toast.success(result.data.message);
                 setEditing(false);
+                setInputs({});
             }
         } catch (e) {
             let error = e.response.data
