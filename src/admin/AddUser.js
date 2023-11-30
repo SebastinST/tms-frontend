@@ -6,10 +6,11 @@ import Select from "react-select";
 import { toast } from 'react-toastify';
 
 function AddUser(props) {
-    const { 
+    const {
         refreshGroups, 
         setRefreshGroups,
-        setRefreshUsers
+        setRefreshUsers,
+        users
     } = props;
     // createUser to add new user and refresh users
     const [inputs, setInputs] = useState({});
@@ -76,7 +77,7 @@ function AddUser(props) {
     }
     
     return (
-        <form onSubmit={handleSubmit} className="add-user-form">
+        <form onSubmit={handleSubmit} {...users.length > 4 ? `className="add-user-form"` : ``}>
             <table className="users-table">
                 <thead>
                     <tr>

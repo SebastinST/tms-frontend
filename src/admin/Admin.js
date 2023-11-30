@@ -60,6 +60,7 @@ function User() {
                 refreshGroups={refreshGroups} 
                 setRefreshGroups={setRefreshGroups}
                 setRefreshUsers={setRefreshUsers}
+                users={users}
             />
             <div className="users-container">
                 {userRows}
