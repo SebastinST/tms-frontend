@@ -45,7 +45,7 @@ function AddGroup(props) {
 
     return (
         <form onSubmit={handleSubmit} className="add-group">
-            <input type="text" name="groupname" value={groupname.group_name || ""} onChange={handleChange} placeholder='Group Name'/>
+            <input type="text" name="groupname" value={groupname.group_name || ""} onChange={handleChange} placeholder='Group Name' required />
             <input type="submit" value="Create New Group"/>
         </form>
     )
