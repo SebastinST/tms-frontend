@@ -17,12 +17,14 @@ function Navbar() {
 
     const handleLogout = async() => {
         try {
-            await Axios.get('http://localhost:8000/_logout',{
+            let result = await Axios.get('http://localhost:8000/_logout',{
                 headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}` }
             });
             Cookies.remove('jwt-token');
 
             navigate("/");
+
+            toast.success(result.data.message);
         } catch (e) {
             let error = e.response.data
             if (error) {
