@@ -113,6 +113,12 @@ function EditUser(props) {
                 navigate("/");
             }
 
+            if (e.response.status === 403) {
+                setEditing(false);
+                setRefreshUsers(true);
+                setInputs({});
+            }
+
             let error = e.response.data
             if (error) {
                 // Show error message
@@ -135,6 +141,12 @@ function EditUser(props) {
                 setRefreshUsers(true);
             }
         } catch (e) {
+            if (e.response.status === 403) {
+                setEditing(false);
+                setRefreshUsers(true);
+                setInputs({});
+            }
+
             if (e.response.status === 401) {
                 navigate("/");
             }
@@ -150,62 +162,64 @@ function EditUser(props) {
     }
 
     return(
-        <form>
+        <form key={user.username}>
             <table className="users-table">
-                <tr>
-                    <td>
-                        {user.username}
-                    </td>
-                    <td>
-                        {
-                        editing
-                        ? <input type='text' name='email' value={inputs.email} onChange={handleChange} placeholder='New email'/>
-                        : user.email
-                        }
-                    </td>
-                    <td>
-                        {
-                        editing
-                        ? <input type='password' name='password' value={inputs.password || ""} onChange={handleChange} placeholder='New password'/>
-                        : '****************'
-                        }
-                    </td>
-                    <td>
-                        {editing
-                        ? <Select
-                            isMulti
-                            name="group_list"
-                            options={groupOptions}
-                            className="basic-multi-select"
-                            classNamePrefix="select"
-                            onChange={handleGroupChange}
-                            value={selectedGroups}
-                            placeholder="Select group"
-                        />
-                        : user.group_list
-                            ? user.group_list.slice(1,-1).split(",").map(group => (
-                                <button className="group-button">{group}</button>
-                            ))
-                            : ""
-                        }
-                    </td>
-                    <td>
-                        {user.is_disabled ? 'Disabled' : 'Active'}
-                    </td>
-                    <td>
-                        <div className="users-table-buttons">
-                            {editing
-                            ?   changedInputs
-                                ? <button type="button" onClick={handleSubmit}>Save</button>
-                                : <button type="button" onClick={toggleEditing}>Cancel</button>
-                            :   <button type="button" onClick={toggleEditing}>Edit</button> 
+                <tbody>
+                    <tr>
+                        <td>
+                            {user.username}
+                        </td>
+                        <td>
+                            {
+                            editing
+                            ? <input type='text' name='email' value={inputs.email} onChange={handleChange} placeholder='New email'/>
+                            : user.email
                             }
-                            <button type="button" onClick={toggleStatus}>
-                                {user.is_disabled ? "Enable" : "Disable"}
-                            </button>
-                        </div>
-                    </td>
-                </tr>
+                        </td>
+                        <td>
+                            {
+                            editing
+                            ? <input type='password' name='password' value={inputs.password || ""} onChange={handleChange} placeholder='New password'/>
+                            : '****************'
+                            }
+                        </td>
+                        <td>
+                            {editing
+                            ? <Select
+                                isMulti
+                                name="group_list"
+                                options={groupOptions}
+                                className="basic-multi-select"
+                                classNamePrefix="select"
+                                onChange={handleGroupChange}
+                                value={selectedGroups}
+                                placeholder="Select group"
+                            />
+                            : user.group_list
+                                ? user.group_list.slice(1,-1).split(",").map(group => (
+                                    <button key={group} className="group-button">{group}</button>
+                                ))
+                                : ""
+                            }
+                        </td>
+                        <td>
+                            {user.is_disabled ? 'Disabled' : 'Active'}
+                        </td>
+                        <td>
+                            <div className="users-table-buttons">
+                                {editing
+                                ?   changedInputs
+                                    ? <button type="button" onClick={handleSubmit}>Save</button>
+                                    : <button type="button" onClick={toggleEditing}>Cancel</button>
+                                :   <button type="button" onClick={toggleEditing}>Edit</button> 
+                                }
+                                <button type="button" onClick={toggleStatus}>
+                                    {user.is_disabled ? "Enable" : "Disable"}
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
             </table>
         </form>
     )
