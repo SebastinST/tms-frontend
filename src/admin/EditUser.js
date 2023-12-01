@@ -36,10 +36,6 @@ function EditUser(props) {
             getGroupOptions();
             setRefreshGroups(false);
         } catch (e) {
-            if (e.response.status === 401) {
-                navigate("/");
-            }
-
             let error = e.response.data
             if (error) {
                 // Show error message

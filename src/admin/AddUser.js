@@ -4,6 +4,7 @@ import Axios from 'axios';
 import Cookies from 'js-cookie';
 import Select from "react-select";
 import { toast } from 'react-toastify';
+import { useNavigate } from "react-router-dom";
 
 function AddUser(props) {
     const {
@@ -12,6 +13,7 @@ function AddUser(props) {
         setRefreshUsers,
         users
     } = props;
+    const navigate = useNavigate();
     // createUser to add new user and refresh users
     const [inputs, setInputs] = useState({});
     const [groupOptions, setGroupOptions] = useState([]);
