@@ -16,7 +16,6 @@ import TableHead from "@mui/material/TableHead"
 import TableRow from "@mui/material/TableRow"
 import { TextField } from "@mui/material"
 import CreatableSelect from "react-select/creatable"
-import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import Select from "react-select"
 import DispatchContext from "./DispatchContext"
@@ -66,7 +65,7 @@ export default function AdminHome() {
         })
       )
     } catch (err) {
-      appDispatch({ type: err.response.status.toString() })
+      //appDispatch({ type: err.response.status.toString() })
     }
   }
 
@@ -76,6 +75,7 @@ export default function AdminHome() {
 
   async function handleSubmit(e, row) {
     e.preventDefault()
+    config.headers.Authorization = "Bearer " + Cookies.get("token")
     //strip the _button from the id
     const id = e.target.id.replace("_button", "")
     const disabled = table.find(row => row.username === id).editDisabled
@@ -107,7 +107,7 @@ export default function AdminHome() {
       body.group = group_list
       try {
         const response = await axios.put("http://localhost:8080/controller/updateUser/" + row.username, body, config)
-        toast.success(response.data.message)
+        appDispatch({ type: "messages", payload: { message: response.data.message, type: "success" } })
         setTable(
           table.map(row => {
             if (row.username === id) {
@@ -118,17 +118,18 @@ export default function AdminHome() {
           })
         )
       } catch (e) {
-        appDispatch({ type: e.response.status.toString() })
+        appDispatch({ type: "messages", payload: { message: e.response.data.errMessage, type: "error" } })
       }
     }
   }
 
   async function handleDisable(e, row) {
     e.preventDefault()
+    config.headers.Authorization = "Bearer " + Cookies.get("token")
     const user = row.username
     try {
       const response = await axios.put("http://localhost:8080/controller/toggleUserStatus/" + user, {}, config)
-      toast.success(response.data.message)
+      appDispatch({ type: "messages", payload: { message: response.data.message, type: "success" } })
       setTable(
         table.map(row => {
           if (row.username === user) {
@@ -138,7 +139,8 @@ export default function AdminHome() {
         })
       )
     } catch (e) {
-      appDispatch({ type: e.response.status.toString() })
+      appDispatch({ type: "isLogged", payload: false })
+      appDispatch({ type: "messages", payload: { message: e.response.data.errMessage, type: "error" } })
     }
   }
 
@@ -154,7 +156,7 @@ export default function AdminHome() {
     }
     try {
       const res = await axios.post("http://localhost:8080/controller/register", body, config)
-      toast.success(res.data.message)
+      appDispatch({ type: "messages", payload: { message: res.data.message, type: "success" } })
       setUsers({
         username: "",
         email: "",
@@ -163,9 +165,10 @@ export default function AdminHome() {
         is_disabled: 0
       })
       fetchData()
-    } catch (err) {
-      toast.error(err.response.data.errMessage)
-      appDispatch({ type: err.response.status.toString() })
+    } catch (error) {
+      appDispatch({ type: "isLogged", payload: false })
+      appDispatch({ type: "messages", payload: { message: error.response.data.errMessage, type: "error" } })
+      //appDispatch({ type: err.response.status.toString() })
     }
   }
 
@@ -182,14 +185,15 @@ export default function AdminHome() {
 
   const createGroup = async event => {
     event.preventDefault()
+    config.headers.Authorization = "Bearer " + Cookies.get("token")
     try {
       const creGrp = { group_name: createValue.map(getCreateValue).join(",") }
       const res = await axios.post("http://localhost:8080/controller/createGroup/", creGrp, config)
-      toast.success(res.data.message)
+      appDispatch({ type: "messages", payload: { message: res.data.message, type: "success" } })
       setCreateValue([])
       getGroups()
     } catch (error) {
-      appDispatch({ type: error.response.status.toString() })
+      appDispatch({ type: "messages", payload: { message: error.response.data.errMessage, type: "error" } })
     }
   }
 
@@ -205,7 +209,7 @@ export default function AdminHome() {
       const res = await axios.get("http://localhost:8080/controller/getGroups", config)
       setGroupOptions(res.data.data.map(getGroupsValue))
     } catch (err) {
-      appDispatch({ type: err.response.status.toString() })
+      //appDispatch({ type: err.response.status.toString() })
     }
   }
 
@@ -336,7 +340,7 @@ export default function AdminHome() {
   return (
     <ThemeProvider theme={defaultTheme}>
       <CssBaseline />
-      <Appbar title="Admin Home" group="admin" />
+
       <main>
         <Container maxWidth="lg">
           <Box
@@ -347,11 +351,10 @@ export default function AdminHome() {
               alignItems: "center"
             }}
           >
-            <ToastContainer position="top-center" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="light" />
             <Grid container spacing={2}>
               <Grid item xs={8}></Grid>
               <Grid item xs={2}>
-                <CreatableSelect components={components} inputValue={inputValue} isClearable isMulti menuIsOpen={false} onChange={newValue => setCreateValue(newValue)} onInputChange={newValue => setInputValue(newValue)} onKeyDown={handleKeyDown} placeholder="" value={createValue} />
+                <CreatableSelect placeholder={"Type group name here..."} components={components} inputValue={inputValue} isClearable isMulti menuIsOpen={false} onChange={newValue => setCreateValue(newValue)} onInputChange={newValue => setInputValue(newValue)} onKeyDown={handleKeyDown} value={createValue} />
               </Grid>
               <Grid item xs={2}>
                 <Button variant="outlined" onClick={createGroup}>

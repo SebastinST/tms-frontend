@@ -5,37 +5,75 @@ import AdminHome from "./AdminHome.js"
 import MyAccount from "./MyAccount.js"
 import { useReducer } from "react"
 import DispatchContext from "./DispatchContext.js"
-import { useNavigate } from "react-router-dom"
+import { BrowserRouter } from "react-router-dom"
+import Appbar from "./Appbar.js"
+import StateContext from "./StateContext.js"
+import React from "react"
+import Toast from "./Toast.js"
+import CheckLogin from "./CheckLogin.js"
 
 function App() {
-  const navigate = useNavigate()
+  const initialState = {
+    messages: [],
+    isLogged: null
+  }
+
   //Using a reducer, manage the navigation of any error response depending on the status code
   function reducer(state, action) {
     switch (action.type) {
-      case "401":
-        navigate("/")
-      case "403":
-        navigate("/home")
-      case "404":
-        navigate("/home")
-      case "500":
-        console.log("500")
+      case "messages":
+        return { ...state, messages: [...state.messages, action.payload] }
+      case "isLogged":
+        //modify the state only if the value is different from the previous one
+        if (state.isLogged !== action.payload) {
+          return { ...state, isLogged: action.payload }
+        } else {
+          return state
+        }
       default:
         console.log(action)
     }
   }
 
-  const [state, dispatch] = useReducer(reducer, { error: null })
+  const [state, dispatch] = useReducer(reducer, initialState)
 
   return (
-    <DispatchContext.Provider value={dispatch}>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/adminhome" element={<AdminHome />} />
-        <Route path="/myaccount" element={<MyAccount />} />
-      </Routes>
-    </DispatchContext.Provider>
+    <StateContext.Provider value={state}>
+      <DispatchContext.Provider value={dispatch}>
+        <BrowserRouter>
+          <Toast messages={state.messages} />
+          <Appbar />
+          <Routes>
+            <Route path="/" element={<Login />} />
+            <Route
+              path="/home"
+              element={
+                <CheckLogin>
+                  <Home />
+                </CheckLogin>
+              }
+            />
+            <Route
+              path="/adminhome"
+              element={
+                <CheckLogin>
+                  <AdminHome />
+                </CheckLogin>
+              }
+            />
+            <Route
+              path="/myaccount"
+              element={
+                <CheckLogin>
+                  <MyAccount />
+                </CheckLogin>
+              }
+            />
+            {/*@TODO: Add a catch all route.*/}
+          </Routes>
+        </BrowserRouter>
+      </DispatchContext.Provider>
+    </StateContext.Provider>
   )
 }
 

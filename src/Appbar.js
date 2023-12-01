@@ -7,72 +7,44 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import Cookies from "js-cookie"
 import { useNavigate } from "react-router-dom"
-import { ToastContainer, toast } from "react-toastify"
+import DispatchContext from "./DispatchContext"
+import StateContext from "./StateContext"
+import Checkgroup from "./Checkgroup"
 
 export default function Appbar(props) {
+  const appDispatch = React.useContext(DispatchContext)
+  const appState = React.useContext(StateContext)
   const navigate = useNavigate()
   const config = {
     headers: {
       Authorization: "Bearer " + Cookies.get("token")
     }
   }
+  const [admin, setAdmin] = useState(false)
 
-  function OnLoad() {
-    const [isLogged, setIsLogged] = useState(null)
-    const [isGroup, setIsGroup] = useState(null)
+  useEffect(() => {
+    checkAdmin()
+  })
 
-    useEffect(() => {
-      const getLogin = async () => {
-        try {
-          const login = await axios.get("http://localhost:8080/controller/checkLogin", config)
-          setIsLogged(login.data)
-        } catch (err) {
-          if (err.response.status === 401) {
-            navigate("/")
-          }
-        }
+  const checkAdmin = () => {
+    Checkgroup.Checkgroup("admin").then(res => {
+      if (res) {
+        setAdmin(true)
+      } else {
+        setAdmin(false)
       }
-
-      const getGroup = async group => {
-        if (group !== undefined && group !== null && group !== "") {
-          try {
-            const res = await axios.post("http://localhost:8080/controller/checkGroup", { group: group }, config)
-            setIsGroup(res.data)
-          } catch (err) {
-            if (err.response.status === 401) {
-              navigate("/")
-            }
-          }
-        }
-      }
-
-      getLogin().then(getGroup(props.group))
-    }, [])
-
-    useEffect(() => {
-      if (isLogged === false) {
-        console.log("not logged")
-        navigate("/")
-      }
-    }, [isLogged])
-
-    useEffect(() => {
-      if (isGroup === false) {
-        console.log("not admin")
-        navigate("/home")
-      }
-    }, [isGroup])
+    })
   }
 
-  OnLoad()
+  useEffect(() => {
+    if (!appState.isLogged) {
+      navigate("/")
+    }
+  }, [appState.isLogged])
 
   //home
   const homePage = () => {
-    if (props.group === "admin") {
-      navigate("/adminhome")
-    } else {
-      navigate("/home")
-    }
+    navigate("/home")
   }
 
   //myaccount
@@ -84,27 +56,35 @@ export default function Appbar(props) {
   const logOut = () => {
     axios.get("http://localhost:8080/controller/_logout", config)
     Cookies.remove("token")
+    appDispatch({ type: "isLogged", payload: false })
     navigate("/")
   }
 
   return (
-    <AppBar position="relative">
-      <Toolbar>
-        <Button variant="Contained" onClick={homePage}>
-          <Typography variant="h3" color="inherit" noWrap>
-            TMS
+    appState.isLogged && (
+      <AppBar position="relative">
+        <Toolbar>
+          <Button variant="Contained" onClick={homePage}>
+            <Typography variant="h3" color="inherit" noWrap>
+              TMS
+            </Typography>
+          </Button>
+          <Typography variant="h6" color="inherit" noWrap component="div" sx={{ flexGrow: 1 }}>
+            {props.title}
           </Typography>
-        </Button>
-        <Typography variant="h6" color="inherit" noWrap component="div" sx={{ flexGrow: 1 }}>
-          {props.title}
-        </Typography>
-        <Button color="inherit" onClick={myAccount}>
-          My Account
-        </Button>
-        <Button color="inherit" onClick={logOut}>
-          Logout
-        </Button>
-      </Toolbar>
-    </AppBar>
+          {admin ? (
+            <Button color="inherit" onClick={() => navigate("/adminhome")}>
+              Account Management
+            </Button>
+          ) : null}
+          <Button color="inherit" onClick={myAccount}>
+            My Account
+          </Button>
+          <Button color="inherit" onClick={logOut}>
+            Logout
+          </Button>
+        </Toolbar>
+      </AppBar>
+    )
   )
 }
