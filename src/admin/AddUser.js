@@ -18,16 +18,26 @@ function AddUser(props) {
     const [selectedGroups, setSelectedGroups] = useState([]);
 
     useEffect(() => {
-        const getGroupOptions = async() => {
-            const result = await Axios.get("http://localhost:8000/getAllGroups", 
-                {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
-            )
-            setGroupOptions(result.data.data.map(group => (
-                { value: group.group_name, label: group.group_name }
-            )))
+        try {
+            const getGroupOptions = async() => {
+                const result = await Axios.get("http://localhost:8000/getAllGroups", 
+                    {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
+                )
+                setGroupOptions(result.data.data.map(group => (
+                    { value: group.group_name, label: group.group_name }
+                )))
+            }
+            getGroupOptions();
+            setRefreshGroups(false);
+        } catch (e) {
+            let error = e.response.data
+            if (error) {
+                // Show error message
+                toast.error(error.message, {
+                    autoClose: false,
+                });
+            }
         }
-        getGroupOptions();
-        setRefreshGroups(false);
     // rerun after new group is added
     }, [refreshGroups, setRefreshGroups])
 
@@ -66,6 +76,10 @@ function AddUser(props) {
                 setSelectedGroups([]);
             }
         } catch (e) {
+            if (e.response.status === 401) {
+                navigate("/");
+            }
+
             let error = e.response.data
             if (error) {
                 // Show error message

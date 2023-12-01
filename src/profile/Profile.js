@@ -5,10 +5,12 @@ import Navbar from '../components/Navbar';
 // External
 import { useState, useEffect } from 'react';
 import Axios from 'axios';
+import { useNavigate } from "react-router-dom"; 
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
 
 function Profile() {
+    const navigate = useNavigate();
     const [profile, setProfile] = useState({});
     const [inputs, setInputs] = useState({});
     const [editing, setEditing] = useState(false);
@@ -74,6 +76,10 @@ function Profile() {
                 setInputs({});
             }
         } catch (e) {
+            if (e.response.status === 401) {
+                navigate("/");
+            }
+
             let error = e.response.data
             if (error) {
                 // Show error message

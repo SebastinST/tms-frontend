@@ -4,6 +4,7 @@ import Axios from 'axios';
 import Cookies from 'js-cookie';
 import Select from "react-select";
 import { toast } from 'react-toastify';
+import { useNavigate } from "react-router-dom";
 
 function EditUser(props) {
     const {
@@ -12,6 +13,7 @@ function EditUser(props) {
         setRefreshGroups,
         setRefreshUsers
     } = props;
+    const navigate = useNavigate();
     
     // updateUser to edit and update user details and refresh users
         // allow user to update certain fields (eg. is_disabled)
@@ -22,16 +24,31 @@ function EditUser(props) {
     const [changedInputs, setChangedInputs] = useState(false);
     
     useEffect(() => {
-        const getGroupOptions = async() => {
-            const result = await Axios.get("http://localhost:8000/getAllGroups", 
-                {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
-            )
-            setGroupOptions(result.data.data.map(group => (
-                { value: group.group_name, label: group.group_name }
-            )))
+        try {
+            const getGroupOptions = async() => {
+                const result = await Axios.get("http://localhost:8000/getAllGroups", 
+                    {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
+                )
+                setGroupOptions(result.data.data.map(group => (
+                    { value: group.group_name, label: group.group_name }
+                )))
+            }
+            getGroupOptions();
+            setRefreshGroups(false);
+        } catch (e) {
+            if (e.response.status === 401) {
+                navigate("/");
+            }
+
+            let error = e.response.data
+            if (error) {
+                // Show error message
+                toast.error(error.message, {
+                    autoClose: false,
+                });
+            }
         }
-        getGroupOptions();
-        setRefreshGroups(false);
+        
     // rerun after new group is added
     }, [refreshGroups, setRefreshGroups])
 
@@ -96,6 +113,10 @@ function EditUser(props) {
                 setInputs({});
             }
         } catch (e) {
+            if (e.response.status === 401) {
+                navigate("/");
+            }
+
             let error = e.response.data
             if (error) {
                 // Show error message
@@ -118,6 +139,10 @@ function EditUser(props) {
                 setRefreshUsers(true);
             }
         } catch (e) {
+            if (e.response.status === 401) {
+                navigate("/");
+            }
+
             let error = e.response.data
             if (error) {
                 // Show error message

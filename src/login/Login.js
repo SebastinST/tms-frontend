@@ -29,6 +29,10 @@ function Login() {
             navigate("/main");
             
         } catch (e) {
+            if (e.response.status === 401) {
+                navigate("/");
+            }
+
             let error = e.response.data
             if (error) {
                 

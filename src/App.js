@@ -1,8 +1,3 @@
-// Handle on request routing
-// Check through User Stories
-// Backend catch token verify error (keith)
-// Root admin should not be able to be edited by others
-
 // Internal
 import './App.css';
 import Login from './login/Login';

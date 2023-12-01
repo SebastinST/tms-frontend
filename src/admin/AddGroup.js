@@ -3,11 +3,14 @@ import { useState } from 'react';
 import Axios from 'axios';
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
+import { useNavigate } from "react-router-dom";
 
 function AddGroup(props) {
     const {
         setRefreshGroups
     } = props;
+    const navigate = useNavigate();
+    
     // createGroup to add groupname
     const [groupname, setGroupname] = useState({});
 
@@ -30,9 +33,12 @@ function AddGroup(props) {
             }
             
         } catch (e) {
+            if (e.response.status === 401) {
+                navigate("/");
+            }
+
             let error = e.response.data
             if (error) {
-                
                 // Show error message
                 toast.error(error.message, {
                     autoClose: false,
