@@ -20,6 +20,7 @@ function ValidateUser({children, group}) {
     if (group) {
         Checkgroup(group).then(function(result) {
             if (!result) {
+                Cookies.remove('jwt-token');
                 navigate("/");
                 // return (<Navigate to="/" replace />);
                 return;

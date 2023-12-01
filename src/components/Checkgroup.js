@@ -13,6 +13,7 @@ async function Checkgroup(groupname) {
         return authorised.data.result;
     } catch (e) {
         if (e.response.status === 401) {
+            Cookies.remove('jwt-token');
             <Navigate to="/"/>
         }
 

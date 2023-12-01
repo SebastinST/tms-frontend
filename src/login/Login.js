@@ -2,7 +2,7 @@
 import './Login.css';
 
 // External
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
@@ -43,15 +43,6 @@ function Login() {
             }
         }
     }
-
-    useEffect(() => {
-        async function redirect() {
-            if (Cookies.get('jwt-token')) {
-                navigate("/main");
-            }
-        }
-        redirect();
-    }, [navigate]);
     
     return (
         <form onSubmit={handleSubmit} className="login-form">
