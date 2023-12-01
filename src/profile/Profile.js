@@ -116,9 +116,11 @@ function Profile() {
                 </div>
                 <div>
                     <div>User Groups:
-                        {profile.group_list && profile.group_list.slice(1,-1).split(",").map(group => (
-                                <button className="group-button">{group}</button>
-                        ))}
+                        <table className="group-table">
+                            {profile.group_list && profile.group_list.slice(1,-1).split(",").map(group => (
+                                    <button className="group-button">{group}</button>
+                            ))}
+                        </table>
                     </div>
                     {editing
                     ?   changedInputs
