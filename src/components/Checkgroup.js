@@ -1,10 +1,10 @@
 import Axios from 'axios';
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 async function Checkgroup(groupname) {
-    const navigate = useNavigate();
+    
     try {
         let authorised = await Axios.post('http://localhost:8000/Checkgroup',
             {"groupname" : groupname},
@@ -13,7 +13,7 @@ async function Checkgroup(groupname) {
         return authorised.data.result;
     } catch (e) {
         if (e.response.status === 401) {
-            navigate("/");
+            <Navigate to="/"/>
         }
 
         let error = e.response.data
