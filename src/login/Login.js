@@ -23,15 +23,13 @@ function Login() {
         try {
             let result = await Axios.post('http://localhost:8000/login', inputs);
             
+            Cookies.remove('jwt-token');
             // Add token to current user (result.data.token)
             Cookies.set('jwt-token', result.data.token)
             
             navigate("/main");
             
         } catch (e) {
-            if (e.response.status === 401) {
-                navigate("/");
-            }
 
             let error = e.response.data
             if (error) {
