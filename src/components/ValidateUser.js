@@ -2,34 +2,43 @@
 import Checkgroup from '../components/Checkgroup';
 
 // External
+import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function ValidateUser({children, group}) {
+    const [token, setToken] = useState(Cookies.get("jwt-token"));
     const navigate = useNavigate();
-    const token = Cookies.get('jwt-token');
-
-    // User not logged in
-    if (!token) {
-        return (<Navigate to="/" replace />);
-    }
-
-    // Check if token is valid
     
-    // If group is defined, check user
-    if (group) {
-        Checkgroup(group).then(function(result) {
-            if (!result) {
-                Cookies.remove('jwt-token');
-                navigate("/");
-                // return (<Navigate to="/" replace />);
-                return;
-            }
-        })
+    const getValidity = () => {
+        
+        // check token if token is defined
+        if (token) {
+            // run checkgroup to check for validity and authorisation with specified group if any
+            // Will return false for no group specified
+            Checkgroup(group).then(function(result) {
+                console.log("Checkgroup result: " + result);
+                // if false and group specified
+                // User is not authorised
+                if (!result && group) {
+                    console.log("Not authorised, got " + result + " for " + group + " group")
+                    Cookies.remove('jwt-token');
+                    navigate("/");
+                }
+            })
+        } else {
+            console.log("No token logged out");
+            navigate("/");
+        }
     }
 
-    // Allow user to access
-    return (<>{children}</>);
+    useEffect(() => {
+        setToken(Cookies.get("jwt-token"));
+        getValidity();
+
+    }, [{children}])
+    
+    return <>{children}</>;
 }
 
 export default ValidateUser;
