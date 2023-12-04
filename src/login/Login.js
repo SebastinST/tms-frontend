@@ -21,7 +21,7 @@ function Login() {
     const handleSubmit = async(event) => {
         event.preventDefault();
         try {
-            let result = await Axios.post('http://localhost:8000/login', inputs).catch(()=>{});
+            let result = await Axios.post('http://localhost:8000/login', inputs);
             
             Cookies.remove('jwt-token');
             // Add token to current user (result.data.token)
