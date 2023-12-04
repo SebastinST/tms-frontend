@@ -10,7 +10,7 @@ import Cookies from "js-cookie"
 import { useState, useEffect } from "react"
 import axios from "axios"
 import Alert from "@mui/material/Alert"
-import { ToastContainer, toast } from "react-toastify"
+import DispatchContext from "./DispatchContext"
 
 const defaultTheme = createTheme()
 
@@ -24,6 +24,7 @@ export default function MyAccount() {
   const [editButton, setEditButton] = useState("Edit")
   const [errorMessage, setErrorMessage] = useState("")
   const [open, setOpen] = React.useState(false)
+  const appDispatch = React.useContext(DispatchContext)
   //Authorization
   const config = {
     headers: {
@@ -58,7 +59,6 @@ export default function MyAccount() {
         const res = await axios.put("http://localhost:8080/controller/updateUserEmail/", updateEmail, config)
         if (data.get("password") !== null && data.get("password") !== "") {
           const updatePassword = { password: data.get("password") }
-
           await axios.put("http://localhost:8080/controller/updateUserPassword/", updatePassword, config)
         }
         setFieldDisabled(true)
@@ -70,7 +70,7 @@ export default function MyAccount() {
         })
         setOpen(false)
         setErrorMessage("")
-        toast.success("Account updated successfully")
+        appDispatch({ type: "messages", payload: { message: "Account updated", type: "success" } })
       } catch (error) {
         setErrorMessage(error.response.data.errMessage)
         setOpen(true)

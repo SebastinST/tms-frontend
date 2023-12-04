@@ -19,6 +19,8 @@ import CreatableSelect from "react-select/creatable"
 import "react-toastify/dist/ReactToastify.css"
 import Select from "react-select"
 import DispatchContext from "./DispatchContext"
+import StateContext from "./StateContext"
+import { useNavigate } from "react-router-dom"
 
 const defaultTheme = createTheme()
 const components = {
@@ -43,6 +45,20 @@ export default function AdminHome() {
   const [table, setTable] = useState([])
   const [groupOptions, setGroupOptions] = React.useState([])
   const appDispatch = React.useContext(DispatchContext)
+  const appState = React.useContext(StateContext)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (appState.isLogged === false) {
+      navigate("/")
+    }
+  }, [appState.isLogged])
+
+  useEffect(() => {
+    if (appState.isAdmin === false) {
+      navigate("/home")
+    }
+  }, [appState.isAdmin])
 
   const handleKeyDown = event => {
     if (!inputValue) return
@@ -373,11 +389,7 @@ export default function AdminHome() {
                   <TableCell align="center">Management</TableCell>
                 </TableRow>
               </TableHead>
-              <TableBody>
-                <CreateRow />
-
-                <Parent />
-              </TableBody>
+              <TableBody>{appState.isAdmin && <CreateRow /> && <Parent />}</TableBody>
             </Table>
           </Box>
         </Container>

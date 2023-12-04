@@ -34,8 +34,6 @@ export default function SignIn() {
     try {
       const isLogin = await axios.get("http://localhost:8080/controller/checkLogin", config)
       if (isLogin.data) {
-        const admin = await axios.post("http://localhost:8080/controller/checkGroup", { group: "admin" }, config)
-
         navigate("/home")
       }
     } catch (error) {
@@ -69,9 +67,6 @@ export default function SignIn() {
       Cookies.remove("username")
       Cookies.set("token", res.data.token, { expires: 7 })
       //Cookies.set("username", res.data.username, { expires: 7 });
-
-      //check is admin for when user is trying to log in
-      const groups = res.data.group_list.split(",")
       appDispatch({ type: "isLogged", payload: true })
 
       navigate("/home")

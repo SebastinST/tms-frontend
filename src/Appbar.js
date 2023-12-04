@@ -20,7 +20,6 @@ export default function Appbar(props) {
       Authorization: "Bearer " + Cookies.get("token")
     }
   }
-  const [admin, setAdmin] = useState(false)
 
   useEffect(() => {
     checkAdmin()
@@ -29,15 +28,15 @@ export default function Appbar(props) {
   const checkAdmin = () => {
     Checkgroup.Checkgroup("admin").then(res => {
       if (res) {
-        setAdmin(true)
+        appDispatch({ type: "isAdmin", payload: true })
       } else {
-        setAdmin(false)
+        appDispatch({ type: "isAdmin", payload: false })
       }
     })
   }
 
   useEffect(() => {
-    if (!appState.isLogged) {
+    if (appState.isLogged === false) {
       navigate("/")
     }
   }, [appState.isLogged])
@@ -54,7 +53,7 @@ export default function Appbar(props) {
 
   //logout
   const logOut = () => {
-    axios.get("http://localhost:8080/controller/_logout", config)
+    axios.get("http://localhost:8080/controller/_logout", config).catch(() => {})
     Cookies.remove("token")
     appDispatch({ type: "isLogged", payload: false })
     navigate("/")
@@ -72,7 +71,7 @@ export default function Appbar(props) {
           <Typography variant="h6" color="inherit" noWrap component="div" sx={{ flexGrow: 1 }}>
             {props.title}
           </Typography>
-          {admin ? (
+          {appState.isAdmin ? (
             <Button color="inherit" onClick={() => navigate("/adminhome")}>
               Account Management
             </Button>

@@ -15,7 +15,8 @@ import CheckLogin from "./CheckLogin.js"
 function App() {
   const initialState = {
     messages: [],
-    isLogged: null
+    isLogged: null,
+    isAdmin: null
   }
 
   //Using a reducer, manage the navigation of any error response depending on the status code
@@ -27,6 +28,13 @@ function App() {
         //modify the state only if the value is different from the previous one
         if (state.isLogged !== action.payload) {
           return { ...state, isLogged: action.payload }
+        } else {
+          return state
+        }
+      case "isAdmin":
+        //modify the state only if the value is different from the previous one
+        if (state.isAdmin !== action.payload) {
+          return { ...state, isAdmin: action.payload }
         } else {
           return state
         }
