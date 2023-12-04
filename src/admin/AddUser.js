@@ -93,7 +93,7 @@ function AddUser(props) {
     }
     
     return (
-        <form onSubmit={handleSubmit} {...users.length > 4 ? `className="add-user-form"` : ``}>
+        <form onSubmit={handleSubmit} className="add-user-form">
             <table className="users-table">
                 <thead>
                     <tr>
