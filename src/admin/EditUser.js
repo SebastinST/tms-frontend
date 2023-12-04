@@ -17,12 +17,19 @@ function EditUser(props) {
     
     // updateUser to edit and update user details and refresh users
         // allow user to update certain fields (eg. is_disabled)
+    
+    // store inputs to be sent on update to DB
     const [inputs, setInputs] = useState({});
+
+    // store all available group options and currently selected group options
     const [groupOptions, setGroupOptions] = useState([]);
     const [selectedGroups, setSelectedGroups] = useState([]);
+
+    // store whether users want to edit/have edited current user details
     const [editing, setEditing] = useState(false);
     const [changedInputs, setChangedInputs] = useState(false);
     
+    // Get all groups available on load and if any new group is added
     useEffect(() => {
         try {
             const getGroupOptions = async() => {
@@ -48,7 +55,9 @@ function EditUser(props) {
     // rerun after new group is added
     }, [refreshGroups, setRefreshGroups])
 
+    // Handle starting/ending of editing
     const toggleEditing = () => {
+        // if starting to edit, set inputs as current user details
         if (!editing) {
             setInputs(values => ({...values, 
                 'username' : user.username, 
@@ -66,12 +75,14 @@ function EditUser(props) {
         }
     }
 
+    // Handle input field changes
     const handleChange = (event) => {
         const name = event.target.name;
         const value = event.target.value;
         setInputs(values => ({...values, [name]: value}));
     }
 
+    // Handle group select input changes
     const handleGroupChange = (event) => {
         let group_list = ",";
         event.map(group => {
@@ -87,6 +98,7 @@ function EditUser(props) {
         setSelectedGroups(event);
     }
 
+    // Check if user changed current inputs from original
     useEffect(() => {
         if (user.email === inputs.email && !inputs.password && user.group_list === inputs.group_list) {
             setChangedInputs(false);
@@ -95,6 +107,7 @@ function EditUser(props) {
         }
     }, [user, inputs])
 
+    // Handle saving of changed current inputs from user to DB
     const handleSubmit = async() => {
         try {
             let result = await Axios.post(
@@ -129,6 +142,7 @@ function EditUser(props) {
         }
     }
 
+    // Handle toggling of activated/disabled status of user
     const toggleStatus = async() => {
         try {
             let result = await Axios.post(
