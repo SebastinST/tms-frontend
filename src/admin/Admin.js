@@ -22,7 +22,7 @@ function User() {
             try {
                 let result = await Axios.get('http://localhost:8000/getAllUsers',{
                     headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}` }
-                });
+                }).catch(()=>{});
                 if (result.data) {
                     setUsers(result.data.data.reverse());
                 }

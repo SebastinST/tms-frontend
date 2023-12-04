@@ -24,7 +24,7 @@ function AddUser(props) {
             const getGroupOptions = async() => {
                 const result = await Axios.get("http://localhost:8000/getAllGroups", 
                     {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
-                )
+                ).catch(()=>{});
                 setGroupOptions(result.data.data.map(group => (
                     { value: group.group_name, label: group.group_name }
                 )))
@@ -70,7 +70,7 @@ function AddUser(props) {
         try {
             let result = await Axios.post('http://localhost:8000/createUser', inputs, 
                 {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
-            );
+            ).catch(()=>{});
             if (result) {
                 toast.success(result.data.message);
                 setRefreshUsers(true);

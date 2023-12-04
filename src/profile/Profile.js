@@ -21,7 +21,7 @@ function Profile() {
             try {
                 let result = await Axios.get('http://localhost:8000/getSelf',{
                     headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}` }
-                });
+                }).catch(()=>{});
                 if (result.data) {
                     setProfile(result.data.data);
                 }
@@ -69,7 +69,7 @@ function Profile() {
                 'http://localhost:8000/updateSelf',
                 inputs, 
                 {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
-            );
+            ).catch(()=>{});
             if (result) {
                 toast.success(result.data.message);
                 setEditing(false);

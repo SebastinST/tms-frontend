@@ -35,7 +35,7 @@ function EditUser(props) {
             const getGroupOptions = async() => {
                 const result = await Axios.get("http://localhost:8000/getAllGroups", 
                     {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
-                )
+                ).catch(()=>{});
                 setGroupOptions(result.data.data.map(group => (
                     { value: group.group_name, label: group.group_name }
                 )))
@@ -114,7 +114,7 @@ function EditUser(props) {
                 'http://localhost:8000/updateUser',
                 inputs, 
                 {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
-            );
+            ).catch(()=>{});
             if (result) {
                 toast.success(result.data.message);
                 setEditing(false);
@@ -149,7 +149,7 @@ function EditUser(props) {
                 'http://localhost:8000/toggleUserStatus',
                 {'username' : user.username, 'is_disabled' : !user.is_disabled }, 
                 {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
-            );
+            ).catch(()=>{});
             if (result) {
                 toast.success(result.data.message);
                 setRefreshUsers(true);

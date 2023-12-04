@@ -19,7 +19,7 @@ function Navbar() {
         try {
             let result = await Axios.get('http://localhost:8000/_logout',{
                 headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}` }
-            });
+            }).catch(()=>{});
             Cookies.remove('jwt-token');
 
             navigate("/");

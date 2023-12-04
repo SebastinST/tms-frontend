@@ -25,7 +25,7 @@ function AddGroup(props) {
             let result = await Axios.post('http://localhost:8000/createGroup',
                 groupname,
                 {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
-            );
+            ).catch(()=>{});
             if (result) {
                 toast.success(result.data.message);
                 setGroupname({});
