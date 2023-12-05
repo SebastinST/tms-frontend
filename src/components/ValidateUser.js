@@ -17,7 +17,6 @@ function ValidateUser({children, group}) {
             // run checkgroup to check for validity and authorisation with specified group if any
             // Will return false for no group specified
             Checkgroup(group).then(function(result) {
-                console.log("Checkgroup result: " + result);
                 // if false and group specified
                 // User is not authorised
                 if (!result && group) {

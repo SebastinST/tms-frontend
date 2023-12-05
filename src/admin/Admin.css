@@ -25,17 +25,6 @@
     text-align: center;
 }
 
-.users-table td + td, 
-.users-table th + th {
-    border-left:2px solid black;
-}
-
-.users-table td,
-.users-table th {
-    width: calc(100%/6);
-    padding: 10px 0px;
-}
-
 .users-container {
     flex-grow: 1;
     overflow-y: auto;

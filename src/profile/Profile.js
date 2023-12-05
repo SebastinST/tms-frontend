@@ -8,6 +8,8 @@ import Axios from 'axios';
 import { useNavigate } from "react-router-dom"; 
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
 
 function Profile() {
     const navigate = useNavigate();
@@ -45,8 +47,6 @@ function Profile() {
         } else {
             setEditing(false);
         }
-        
-        
     }
 
     const handleChange = (event) => {
@@ -69,7 +69,20 @@ function Profile() {
                 'http://localhost:8000/updateSelf',
                 inputs, 
                 {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
-            ).catch(()=>{});
+            ).catch((e)=>{
+                if (e.response.status === 401) {
+                    Cookies.remove('jwt-token');
+                    navigate("/");
+                }
+    
+                let error = e.response.data
+                if (error) {
+                    // Show error message
+                    toast.error(error.message, {
+                        autoClose: false,
+                    });
+                }
+            });
             if (result) {
                 toast.success(result.data.message);
                 setEditing(false);
@@ -77,6 +90,7 @@ function Profile() {
             }
         } catch (e) {
             if (e.response.status === 401) {
+                Cookies.remove('jwt-token');
                 navigate("/");
             }
 
@@ -100,33 +114,30 @@ function Profile() {
                     <div>
                         Username: {profile.username}
                     </div>
-                    <div>
-                        Email: {
-                        editing
-                        ? <input type='text' name='email' value={inputs.email} onChange={handleChange}/>
-                        : profile.email
-                        }
+                    <div className="profile-input">
+                    {editing
+                    ? <TextField name="email" label="Email" id="email" value={inputs.email || ""} onChange={handleChange}/>
+                    : `Email: ${profile.email}`
+                    }
                     </div>
-                    <div>Password: {
-                        editing
-                        ? <input type='password' name='password' value={inputs.password || ""} onChange={handleChange} placeholder='Input new password'/>
-                        : '****************'
-                        }
+                    <div className="profile-input">
+                    {editing
+                    ? <TextField name="password" label="New Password" type="password" id="password" value={inputs.password || ""} onChange={handleChange}/>
+                    : `Password: ****************`
+                    }    
                     </div>
                 </div>
                 <div>
-                    <div>User Groups:
-                        <table className="group-table">
-                            {profile.group_list && profile.group_list.slice(1,-1).split(",").map(group => (
-                                    <button className="group-button">{group}</button>
-                            ))}
-                        </table>
+                    <div>User Groups:                        
+                        {profile.group_list && profile.group_list.slice(1,-1).split(",").map(group => (
+                                <button className="group-button">{group}</button>
+                        ))}
                     </div>
                     {editing
-                    ?   changedInputs
-                        ? <button type="button" onClick={handleSubmit}>Save</button>
-                        : <button type="button" onClick={toggleEditing}>Cancel</button>
-                    :   <button type="button" onClick={toggleEditing}>Edit</button> 
+                    ? changedInputs
+                        ? <Button type="submit" variant="contained" onClick={handleSubmit}>Save</Button>
+                        : <Button type="button" variant="outlined" onClick={toggleEditing}>Cancel</Button>
+                    : <Button type="button" variant="outlined" onClick={toggleEditing}>Edit</Button>
                     }
                 </div>
             </div>

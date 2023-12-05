@@ -5,6 +5,14 @@ import Cookies from 'js-cookie';
 import Select from "react-select";
 import { toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 
 function EditUser(props) {
     const {
@@ -114,7 +122,20 @@ function EditUser(props) {
                 'http://localhost:8000/updateUser',
                 inputs, 
                 {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
-            ).catch(()=>{});
+            ).catch((e)=>{
+                if (e.response.status === 401) {
+                    Cookies.remove('jwt-token');
+                    navigate("/");
+                }
+    
+                let error = e.response.data
+                if (error) {
+                    // Show error message
+                    toast.error(error.message, {
+                        autoClose: false,
+                    });
+                }
+            });
             if (result) {
                 toast.success(result.data.message);
                 setEditing(false);
@@ -123,6 +144,7 @@ function EditUser(props) {
             }
         } catch (e) {
             if (e.response.status === 401) {
+                Cookies.remove('jwt-token');
                 navigate("/");
             }
 
@@ -149,7 +171,20 @@ function EditUser(props) {
                 'http://localhost:8000/toggleUserStatus',
                 {'username' : user.username, 'is_disabled' : !user.is_disabled }, 
                 {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
-            ).catch(()=>{});
+            ).catch((e)=>{
+                if (e.response.status === 401) {
+                    Cookies.remove('jwt-token');
+                    navigate("/");
+                }
+    
+                let error = e.response.data
+                if (error) {
+                    // Show error message
+                    toast.error(error.message, {
+                        autoClose: false,
+                    });
+                }
+            });
             if (result) {
                 toast.success(result.data.message);
                 setRefreshUsers(true);
@@ -162,6 +197,7 @@ function EditUser(props) {
             }
 
             if (e.response.status === 401) {
+                Cookies.remove('jwt-token');
                 navigate("/");
             }
 
@@ -177,27 +213,28 @@ function EditUser(props) {
 
     return(
         <form key={user.username}>
-            <table className="users-table">
-                <tbody>
-                    <tr>
-                        <td>
+            <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 650 }} size="small">
+                <TableBody>
+                    <TableRow>
+                        <TableCell align="center" style={{ width: "18%" }}>
                             {user.username}
-                        </td>
-                        <td>
+                        </TableCell>
+                        <TableCell align="center">
                             {
                             editing
-                            ? <input type='text' name='email' value={inputs.email} onChange={handleChange} placeholder='New email'/>
+                            ? <TextField name="email" size="small" label="Email" value={inputs.email || ""} onChange={handleChange}/>
                             : user.email
                             }
-                        </td>
-                        <td>
+                        </TableCell>
+                        <TableCell align="center" style={{ width: "18%" }}>
                             {
                             editing
-                            ? <input type='password' name='password' value={inputs.password || ""} onChange={handleChange} placeholder='New password'/>
+                            ? <TextField name="password" size="small" label="New Password" type="password" value={inputs.password || ""} onChange={handleChange}/>
                             : '****************'
                             }
-                        </td>
-                        <td>
+                        </TableCell>
+                        <TableCell align="center" style={{ width: "18%" }}>
                             {editing
                             ? <Select
                                 isMulti
@@ -207,34 +244,42 @@ function EditUser(props) {
                                 classNamePrefix="select"
                                 onChange={handleGroupChange}
                                 value={selectedGroups}
-                                placeholder="Select group"
-                            />
+                                placeholder="Select Group"
+                                classNames="group-select"
+                                menuPortalTarget={document.body} 
+                                styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                                />
                             : user.group_list
                                 ? user.group_list.slice(1,-1).split(",").map(group => (
                                     <button key={group} className="group-button">{group}</button>
                                 ))
                                 : ""
                             }
-                        </td>
-                        <td>
+                        </TableCell>
+                        <TableCell align="center" style={{ width: "10%" }}>
                             {user.is_disabled ? 'Disabled' : 'Active'}
-                        </td>
-                        <td>
+                        </TableCell>
+                        <TableCell align="center" style={{ width: "18%" }}>
                             <div className="users-table-buttons">
                                 {editing
                                 ?   changedInputs
-                                    ? <button type="button" onClick={handleSubmit}>Save</button>
-                                    : <button type="button" onClick={toggleEditing}>Cancel</button>
-                                :   <button type="button" onClick={toggleEditing}>Edit</button> 
+                                    ? <Button type="button" size="small" variant="contained" onClick={handleSubmit}color="success">Save</Button>
+                                    : <Button type="button" size="small" variant="outlined" onClick={toggleEditing}>Cancel</Button>
+                                :   <Button type="button" size="small" variant="outlined" onClick={toggleEditing}>Edit</Button>
                                 }
-                                <button type="button" onClick={toggleStatus}>
-                                    {user.is_disabled ? "Enable" : "Disable"}
-                                </button>
+                                {
+                                    user.is_disabled 
+                                    ? <Button type="button" size="small" variant="contained" color="success" onClick={toggleStatus}>Enable</Button>
+                                    : <Button type="button" size="small" variant="contained" color="error" onClick={toggleStatus}>
+                                    Disable
+                                    </Button>
+                                }
                             </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                        </TableCell>
+                    </TableRow>
+                </TableBody>
+            </Table>
+            </TableContainer>
         </form>
     )
 }

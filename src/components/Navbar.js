@@ -2,13 +2,14 @@
 import './Navbar.css';
 
 // External
-import { Link } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
 import Axios from 'axios';
 import Cookies from 'js-cookie';
 import { useEffect, useState } from 'react';
 import Checkgroup from '../components/Checkgroup';
 import { toast } from 'react-toastify';
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography"
 
 function Navbar() {
     const navigate = useNavigate();
@@ -19,7 +20,20 @@ function Navbar() {
         try {
             let result = await Axios.get('http://localhost:8000/_logout',{
                 headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}` }
-            }).catch(()=>{});
+            }).catch((e)=>{
+                if (e.response.status === 401) {
+                    Cookies.remove('jwt-token');
+                    navigate("/");
+                }
+    
+                let error = e.response.data
+                if (error) {
+                    // Show error message
+                    toast.error(error.message, {
+                        autoClose: false,
+                    });
+                }
+            });
             Cookies.remove('jwt-token');
 
             navigate("/");
@@ -52,23 +66,21 @@ function Navbar() {
     return (
         <>
         <div className="navbar">
-            <Link className="title" to="/main">TMS</Link>
+            <Button type="submit" variant="text" onClick={() => navigate("/main")}>
+                <Typography variant='h3'>TMS</Typography>
+            </Button>
             <div className="buttons">
                 {isAdmin &&
-                    <button type="button">
-                        <Link to='/admin'>
-                            Account Management
-                        </Link>
-                    </button>
+                    <Button variant="contained" size="small" onClick={() => navigate("/admin")}>
+                        Account Management
+                    </Button>
                 }
-                <button type="button">
-                    <Link to='/profile'>
-                        My Account
-                    </Link>
-                </button>
-                <button type="button" onClick={handleLogout}>
+                <Button variant="contained" size="small" onClick={() => navigate("/profile")}>
+                    My Account
+                </Button>
+                <Button variant="contained" size="small" onClick={handleLogout}>
                     Log Out
-                </button>
+                </Button>
             </div>
         </div>
         </>

@@ -1,11 +1,9 @@
 .profile-container {
     flex-grow: 1;
-    width: stretch;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 20px;
-    text-align: center;
     margin-top: 20px;
 }
 
@@ -25,21 +23,14 @@
 .profile-form div {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 20px;
 }
 
-.profile-submit {
-    flex-grow: 1;
-    margin-top: 20px;
+.profile-input input {
+    width: auto;
 }
 
 .group-button {
     pointer-events: none;
     margin-right: 5px;
-}
-
-.group-table {
-    border: 2px solid black;
-    padding: 10px;
-    margin-bottom: 10px;
 }

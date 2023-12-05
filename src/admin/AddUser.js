@@ -1,17 +1,25 @@
-// External Functional
+// External
 import { useState, useEffect } from 'react';
 import Axios from 'axios';
 import Cookies from 'js-cookie';
 import Select from "react-select";
 import { toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 
 function AddUser(props) {
     const {
         refreshGroups, 
         setRefreshGroups,
-        setRefreshUsers,
-        users
+        setRefreshUsers
     } = props;
     const navigate = useNavigate();
     // createUser to add new user and refresh users
@@ -70,7 +78,20 @@ function AddUser(props) {
         try {
             let result = await Axios.post('http://localhost:8000/createUser', inputs, 
                 {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
-            ).catch(()=>{});
+            ).catch((e)=>{
+                if (e.response.status === 401) {
+                    Cookies.remove('jwt-token');
+                    navigate("/");
+                }
+    
+                let error = e.response.data
+                if (error) {
+                    // Show error message
+                    toast.error(error.message, {
+                        autoClose: false,
+                    });
+                }
+            });
             if (result) {
                 toast.success(result.data.message);
                 setRefreshUsers(true);
@@ -79,6 +100,7 @@ function AddUser(props) {
             }
         } catch (e) {
             if (e.response.status === 401) {
+                Cookies.remove('jwt-token');
                 navigate("/");
             }
 
@@ -94,29 +116,30 @@ function AddUser(props) {
     
     return (
         <form onSubmit={handleSubmit} className="add-user-form">
-            <table className="users-table">
-                <thead>
-                    <tr>
-                        <th>Username*</th>
-                        <th>Email</th>
-                        <th>Password*</th>
-                        <th>Groups</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                            <input type="text" name="username" value={inputs.username || ""} onChange={handleChange} placeholder='Username' required/>
-                        </td>
-                        <td>
-                            <input type="text" name="email" value={inputs.email || ""} onChange={handleChange} placeholder='Email'/>
-                        </td>
-                        <td>
-                            <input type="password" name="password" value={inputs.password || ""} onChange={handleChange} placeholder='Password' required/>
-                        </td>
-                        <td>
+            <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 650 }} size="small">
+                <TableHead>
+                    <TableRow>
+                        <TableCell align="center" style={{ width: "18%" }}>Username*</TableCell>
+                        <TableCell align="center" style={{ width: "18%" }}>Email</TableCell>
+                        <TableCell align="center" style={{ width: "18%" }}>Password*</TableCell>
+                        <TableCell align="center" style={{ width: "18%" }}>Groups</TableCell>
+                        <TableCell align="center" style={{ width: "10%" }}>Status</TableCell>
+                        <TableCell align="center" style={{ width: "18%" }}>Actions</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    <TableRow>
+                        <TableCell align="center" style={{ width: "18%" }}>
+                            <TextField name="username" required size="small" label="New Username" value={inputs.username || ""} onChange={handleChange}/>
+                        </TableCell>
+                        <TableCell align="center" style={{ width: "18%" }}>
+                            <TextField name="email" size="small" label="New Email" value={inputs.email || ""} onChange={handleChange}/>
+                        </TableCell>
+                        <TableCell align="center" style={{ width: "18%" }}>
+                            <TextField name="password" required size="small" label="New Password" type="password" value={inputs.password || ""} onChange={handleChange}/>
+                        </TableCell>
+                        <TableCell align="center" style={{ width: "18%" }}>
                             <Select
                                 isMulti
                                 name="group_list"
@@ -125,18 +148,20 @@ function AddUser(props) {
                                 classNamePrefix="select"
                                 onChange={handleGroupChange}
                                 value={selectedGroups}
-                                placeholder="Select group"
+                                placeholder="Select Group"
+                                classNames="group-select"
+                                menuPortalTarget={document.body} 
+                                styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
                             />
-                        </td>
-                        <td>
-                            Active
-                        </td>
-                        <td>
-                            <input type="submit" value="Create New User"/>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                        </TableCell>
+                        <TableCell align="center" style={{ width: "10%" }}>Active</TableCell>
+                        <TableCell align="center" style={{ width: "18%" }}>
+                            <Button type="submit" size="small" variant="contained" color="success">Create New User</Button>
+                        </TableCell>
+                    </TableRow>
+                </TableBody>
+            </Table>
+            </TableContainer>
         </form>
     )
 };

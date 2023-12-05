@@ -41,8 +41,8 @@ function User() {
     }, [refreshUsers]);
     const userRows = users.map(user => {
         return (
-            <EditUser 
-                id={user.username}
+            <EditUser
+                key={user.username}
                 user={user} 
                 refreshGroups={refreshGroups}
                 setRefreshGroups={setRefreshGroups}
@@ -60,7 +60,6 @@ function User() {
                 refreshGroups={refreshGroups} 
                 setRefreshGroups={setRefreshGroups}
                 setRefreshUsers={setRefreshUsers}
-                users={users}
             />
             <div className="users-container">
                 {userRows}

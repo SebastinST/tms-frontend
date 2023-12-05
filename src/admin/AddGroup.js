@@ -4,6 +4,8 @@ import Axios from 'axios';
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
 
 function AddGroup(props) {
     const {
@@ -25,7 +27,20 @@ function AddGroup(props) {
             let result = await Axios.post('http://localhost:8000/createGroup',
                 groupname,
                 {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
-            ).catch(()=>{});
+            ).catch((e)=>{
+                if (e.response.status === 401) {
+                    Cookies.remove('jwt-token');
+                    navigate("/");
+                }
+    
+                let error = e.response.data
+                if (error) {
+                    // Show error message
+                    toast.error(error.message, {
+                        autoClose: false,
+                    });
+                }
+            });
             if (result) {
                 toast.success(result.data.message);
                 setGroupname({});
@@ -34,6 +49,7 @@ function AddGroup(props) {
             
         } catch (e) {
             if (e.response.status === 401) {
+                Cookies.remove('jwt-token');
                 navigate("/");
             }
 
@@ -49,8 +65,8 @@ function AddGroup(props) {
 
     return (
         <form onSubmit={handleSubmit} className="add-group">
-            <input type="text" name="groupname" value={groupname.group_name || ""} onChange={handleChange} placeholder='Group Name' required />
-            <input type="submit" value="Create New Group"/>
+            <TextField name="groupname" required size="small" label="Group Name" value={groupname.group_name || ""} onChange={handleChange}/>
+            <Button type="submit" variant="contained" color="success">Create New Group</Button>
         </form>
     )
 }
