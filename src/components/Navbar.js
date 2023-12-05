@@ -40,11 +40,20 @@ function Navbar() {
 
             toast.success(result.data.message);
         } catch (e) {
-            let error = e.response.data
-            if (error) {
-                
-                // Show error message
-                toast.error(error.message, {
+            try {
+                if (e.response.status === 401) {
+                    Cookies.remove('jwt-token');
+                    navigate("/");
+                }
+                let error = e.response.data
+                if (error) {
+                    // Show error message
+                    toast.error(error.message, {
+                        autoClose: false,
+                    });
+                }
+            } catch (e) {
+                toast.error(e, {
                     autoClose: false,
                 });
             }
@@ -53,11 +62,19 @@ function Navbar() {
 
     useEffect(() => {
         async function checkAdmin() {
-            if (token && await Checkgroup("admin")) {
-                setIsAdmin(true);
-            } else {
+            try {
+                await Checkgroup("admin").then(function(result){
+                    if (result.response && result.response.status == 401) {
+                        Cookies.remove('jwt-token');
+                        navigate("/");
+                    }
+                    if (result === true) {
+                        setIsAdmin(true);
+                    }
+                })
+            } catch (e) {
                 setIsAdmin(false);
-            }
+            }   
         }
         checkAdmin();
     }, [token])
@@ -72,7 +89,7 @@ function Navbar() {
             <div className="buttons">
                 {isAdmin &&
                     <Button variant="contained" size="small" onClick={() => navigate("/admin")}>
-                        Account Management
+                        Account<br/>Management
                     </Button>
                 }
                 <Button variant="contained" size="small" onClick={() => navigate("/profile")}>

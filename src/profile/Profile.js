@@ -23,15 +23,38 @@ function Profile() {
             try {
                 let result = await Axios.get('http://localhost:8000/getSelf',{
                     headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}` }
-                }).catch(()=>{});
+                }).catch((e)=>{
+                    if (e.response.status === 401) {
+                        Cookies.remove('jwt-token');
+                        navigate("/");
+                    }
+        
+                    let error = e.response.data
+                    if (error) {
+                        // Show error message
+                        toast.error(error.message, {
+                            autoClose: false,
+                        });
+                    }
+                });
                 if (result.data) {
                     setProfile(result.data.data);
                 }
             } catch (e) {
-                let error = e.response.data
-                if (error) {
-                    // Show error message
-                    toast.error(error.message, {
+                try {
+                    if (e.response.status === 401) {
+                        Cookies.remove('jwt-token');
+                        navigate("/");
+                    }
+                    let error = e.response.data
+                    if (error) {
+                        // Show error message
+                        toast.error(error.message, {
+                            autoClose: false,
+                        });
+                    }
+                } catch (e) {
+                    toast.error(e, {
                         autoClose: false,
                     });
                 }
@@ -89,15 +112,20 @@ function Profile() {
                 setInputs({});
             }
         } catch (e) {
-            if (e.response.status === 401) {
-                Cookies.remove('jwt-token');
-                navigate("/");
-            }
-
-            let error = e.response.data
-            if (error) {
-                // Show error message
-                toast.error(error.message, {
+            try {
+                if (e.response.status === 401) {
+                    Cookies.remove('jwt-token');
+                    navigate("/");
+                }
+                let error = e.response.data
+                if (error) {
+                    // Show error message
+                    toast.error(error.message, {
+                        autoClose: false,
+                    });
+                }
+            } catch (e) {
+                toast.error(e, {
                     autoClose: false,
                 });
             }
@@ -130,7 +158,7 @@ function Profile() {
                 <div>
                     <div>User Groups:                        
                         {profile.group_list && profile.group_list.slice(1,-1).split(",").map(group => (
-                                <button className="group-button">{group}</button>
+                                <button key={group} className="group-button">{group}</button>
                         ))}
                     </div>
                     {editing

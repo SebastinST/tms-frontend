@@ -10,11 +10,13 @@ import { useState, useEffect } from 'react';
 import Axios from 'axios';
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
+import { useNavigate } from "react-router-dom";
 
 function User() {
     const [refreshGroups, setRefreshGroups] = useState(false);
     const [refreshUsers, setRefreshUsers] = useState(false);
     const [users, setUsers] = useState([]);
+    const navigate = useNavigate();
 
     // getAllUsers to display users details and refresh when changed, show latest on top
     useEffect(() => {
@@ -27,10 +29,20 @@ function User() {
                     setUsers(result.data.data.reverse());
                 }
             } catch (e) {
-                let error = e.response.data
-                if (error) {
-                    // Show error message
-                    toast.error(error.message, {
+                try {
+                    if (e.response.status === 401) {
+                        Cookies.remove('jwt-token');
+                        navigate("/");
+                    }
+                    let error = e.response.data
+                    if (error) {
+                        // Show error message
+                        toast.error(error.message, {
+                            autoClose: false,
+                        });
+                    }
+                } catch (e) {
+                    toast.error(e, {
                         autoClose: false,
                     });
                 }

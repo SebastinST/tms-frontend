@@ -32,18 +32,43 @@ function AddUser(props) {
             const getGroupOptions = async() => {
                 const result = await Axios.get("http://localhost:8000/getAllGroups", 
                     {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
-                ).catch(()=>{});
-                setGroupOptions(result.data.data.map(group => (
-                    { value: group.group_name, label: group.group_name }
-                )))
+                ).catch((e)=>{
+                    if (e.response.status === 401) {
+                        Cookies.remove('jwt-token');
+                        navigate("/");
+                    }
+        
+                    let error = e.response.data
+                    if (error) {
+                        // Show error message
+                        toast.error(error.message, {
+                            autoClose: false,
+                        });
+                    }
+                });
+                if (result) {
+                    setGroupOptions(result.data.data.map(group => (
+                        { value: group.group_name, label: group.group_name }
+                    )));
+                }
             }
             getGroupOptions();
             setRefreshGroups(false);
         } catch (e) {
-            let error = e.response.data
-            if (error) {
-                // Show error message
-                toast.error(error.message, {
+            try {
+                if (e.response.status === 401) {
+                    Cookies.remove('jwt-token');
+                    navigate("/");
+                }
+                let error = e.response.data
+                if (error) {
+                    // Show error message
+                    toast.error(error.message, {
+                        autoClose: false,
+                    });
+                }
+            } catch (e) {
+                toast.error(e, {
                     autoClose: false,
                 });
             }
@@ -99,15 +124,20 @@ function AddUser(props) {
                 setSelectedGroups([]);
             }
         } catch (e) {
-            if (e.response.status === 401) {
-                Cookies.remove('jwt-token');
-                navigate("/");
-            }
-
-            let error = e.response.data
-            if (error) {
-                // Show error message
-                toast.error(error.message, {
+            try {
+                if (e.response.status === 401) {
+                    Cookies.remove('jwt-token');
+                    navigate("/");
+                }
+                let error = e.response.data
+                if (error) {
+                    // Show error message
+                    toast.error(error.message, {
+                        autoClose: false,
+                    });
+                }
+            } catch (e) {
+                toast.error(e, {
                     autoClose: false,
                 });
             }

@@ -48,15 +48,20 @@ function AddGroup(props) {
             }
             
         } catch (e) {
-            if (e.response.status === 401) {
-                Cookies.remove('jwt-token');
-                navigate("/");
-            }
-
-            let error = e.response.data
-            if (error) {
-                // Show error message
-                toast.error(error.message, {
+            try {
+                if (e.response.status === 401) {
+                    Cookies.remove('jwt-token');
+                    navigate("/");
+                }
+                let error = e.response.data
+                if (error) {
+                    // Show error message
+                    toast.error(error.message, {
+                        autoClose: false,
+                    });
+                }
+            } catch (e) {
+                toast.error(e, {
                     autoClose: false,
                 });
             }
@@ -66,7 +71,7 @@ function AddGroup(props) {
     return (
         <form onSubmit={handleSubmit} className="add-group">
             <TextField name="groupname" required size="small" label="Group Name" value={groupname.group_name || ""} onChange={handleChange}/>
-            <Button type="submit" variant="contained" color="success">Create New Group</Button>
+            <Button type="submit" variant="contained" size="small" color="success">Create New Group</Button>
         </form>
     )
 }

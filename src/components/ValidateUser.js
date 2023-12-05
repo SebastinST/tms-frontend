@@ -20,13 +20,12 @@ function ValidateUser({children, group}) {
                 // if false and group specified
                 // User is not authorised
                 if (!result && group) {
-                    console.log("Not authorised, got " + result + " for " + group + " group")
                     Cookies.remove('jwt-token');
                     navigate("/");
                 }
             })
         } else {
-            console.log("No token logged out");
+            Cookies.remove('jwt-token');
             navigate("/");
         }
     }

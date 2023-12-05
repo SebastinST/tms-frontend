@@ -1,5 +1,3 @@
-// Check user input to protect against code injection (SQL)
-
 // Internal
 import './App.css';
 import Login from './login/Login';

@@ -36,11 +36,16 @@ function Login() {
             
             navigate("/main");
         } catch (e) {
-            let error = e.response
-            if (error) {
-                
-                // Show error message
-                toast.error(error.message, {
+            try {
+                let error = e.response.data
+                if (error) {
+                    // Show error message
+                    toast.error(error.message, {
+                        autoClose: false,
+                    });
+                }
+            } catch (e) {
+                toast.error(e, {
                     autoClose: false,
                 });
             }
