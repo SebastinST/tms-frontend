@@ -40,8 +40,12 @@ export default function MyAccount() {
         response.data.data.password = ""
         setDefAccInfo(response.data.data)
       } catch (err) {
-        if (err.response.status === 401) {
-          //appDispatch({ type: "isLogged", data: false })
+        if (err.response) {
+          if (err.response.status === 401) {
+            appDispatch({ type: "messages", payload: { message: "You are not authorised", type: "error" } })
+          }
+        } else {
+          appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
         }
       }
     }

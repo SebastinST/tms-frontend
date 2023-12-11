@@ -81,7 +81,11 @@ export default function AdminHome() {
         })
       )
     } catch (err) {
-      //appDispatch({ type: err.response.status.toString() })
+      if (err.response) {
+        appDispatch({ type: "messages", payload: { message: err.response.data.errMessage, type: "error" } })
+      } else {
+        appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
+      }
     }
   }
 
@@ -134,7 +138,11 @@ export default function AdminHome() {
           })
         )
       } catch (e) {
-        appDispatch({ type: "messages", payload: { message: e.response.data.errMessage, type: "error" } })
+        if (e.response) {
+          appDispatch({ type: "messages", payload: { message: e.response.data.errMessage, type: "error" } })
+        } else {
+          appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
+        }
       }
     }
   }
@@ -156,7 +164,14 @@ export default function AdminHome() {
       )
     } catch (e) {
       appDispatch({ type: "isLogged", payload: false })
-      appDispatch({ type: "messages", payload: { message: e.response.data.errMessage, type: "error" } })
+      if (e.response) {
+        appDispatch({ type: "messages", payload: { message: e.response.data.errMessage, type: "error" } })
+        if (e.response.status === 403) {
+          navigate("/home")
+        }
+      } else {
+        appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
+      }
     }
   }
 
@@ -183,7 +198,14 @@ export default function AdminHome() {
       fetchData()
     } catch (error) {
       appDispatch({ type: "isLogged", payload: false })
-      appDispatch({ type: "messages", payload: { message: error.response.data.errMessage, type: "error" } })
+      if (error.response) {
+        appDispatch({ type: "messages", payload: { message: error.response.data.errMessage, type: "error" } })
+        if (error.response.status === 403) {
+          navigate("/home")
+        }
+      } else {
+        appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
+      }
       //appDispatch({ type: err.response.status.toString() })
     }
   }
@@ -209,7 +231,11 @@ export default function AdminHome() {
       setCreateValue([])
       getGroups()
     } catch (error) {
-      appDispatch({ type: "messages", payload: { message: error.response.data.errMessage, type: "error" } })
+      if (error.response) {
+        appDispatch({ type: "messages", payload: { message: error.response.data.errMessage, type: "error" } })
+      } else {
+        appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
+      }
     }
   }
 
@@ -225,7 +251,11 @@ export default function AdminHome() {
       const res = await axios.get("http://localhost:8080/controller/getGroups", config)
       setGroupOptions(res.data.data.map(getGroupsValue))
     } catch (err) {
-      //appDispatch({ type: err.response.status.toString() })
+      if (err.response) {
+        appDispatch({ type: "messages", payload: { message: err.response.data.errMessage, type: "error" } })
+      } else {
+        appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
+      }
     }
   }
 
@@ -389,7 +419,10 @@ export default function AdminHome() {
                   <TableCell align="center">Management</TableCell>
                 </TableRow>
               </TableHead>
-              <TableBody>{appState.isAdmin && <CreateRow /> && <Parent />}</TableBody>
+              <TableBody>
+                {appState.isAdmin && <CreateRow />}
+                {appState.isAdmin && <Parent />}
+              </TableBody>
             </Table>
           </Box>
         </Container>

@@ -1,11 +1,11 @@
 import Login from "./Login.js"
 import Home from "./Home.js"
-import { Routes, Route } from "react-router-dom"
+import Board from "./Board.js"
+import { Routes, Route, BrowserRouter } from "react-router-dom"
 import AdminHome from "./AdminHome.js"
 import MyAccount from "./MyAccount.js"
 import { useReducer } from "react"
 import DispatchContext from "./DispatchContext.js"
-import { BrowserRouter } from "react-router-dom"
 import Appbar from "./Appbar.js"
 import StateContext from "./StateContext.js"
 import React from "react"
@@ -74,6 +74,14 @@ function App() {
               element={
                 <CheckLogin>
                   <MyAccount />
+                </CheckLogin>
+              }
+            />
+            <Route
+              path="/board"
+              element={
+                <CheckLogin>
+                  <Board />
                 </CheckLogin>
               }
             />

@@ -53,7 +53,13 @@ export default function Appbar(props) {
 
   //logout
   const logOut = () => {
-    axios.get("http://localhost:8080/controller/_logout", config).catch(() => {})
+    try{
+      axios.get("http://localhost:8080/controller/_logout", config)
+    }
+    catch(e){
+      console.log(e)
+    }
+    
     Cookies.remove("token")
     appDispatch({ type: "isLogged", payload: false })
     navigate("/")

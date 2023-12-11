@@ -22,10 +22,20 @@ export const CheckLogin = ({ children }) => {
         console.log("Proper token")
         appDispatch({ type: "isLogged", payload: login.data })
       } catch (err) {
-        if (err.response.status === 401) {
+        if(err.response){
+          if (err.response.status === 401) {
+            console.log("Improper token")
+            appDispatch({ type: "isLogged", payload: false })
+            appDispatch({ type: "messages", payload: { message: "You are not authorised", type: "error" } })
+            Cookies.remove("token")
+            navigate("/")
+          }
+        }
+        else{
           console.log("Improper token")
           appDispatch({ type: "isLogged", payload: false })
-          appDispatch({ type: "messages", payload: { message: "You are not authorised", type: "error" } })
+          appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
+          Cookies.remove("token")
           navigate("/")
         }
       }

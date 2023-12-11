@@ -12,6 +12,7 @@ import Cookies from "js-cookie"
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import DispatchContext from "./DispatchContext"
+import "react-toastify/dist/ReactToastify.css"
 
 const defaultTheme = createTheme()
 export default function SignIn() {
@@ -37,8 +38,11 @@ export default function SignIn() {
         navigate("/home")
       }
     } catch (error) {
-      setErrorMessage(error.response.data.errMessage)
-      setOpen(true)
+      if (error.response) {
+        appDispatch({ type: "messages", payload: { message: error.response.data.errMessage, type: "error" } })
+      } else {
+        appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
+      }
     }
   }
   //on load
@@ -61,18 +65,18 @@ export default function SignIn() {
     try {
       //post login
       const res = await axios.post("http://localhost:8080/controller/login", user)
-
       //cookie
       Cookies.remove("token")
-      Cookies.remove("username")
       Cookies.set("token", res.data.token, { expires: 7 })
       //Cookies.set("username", res.data.username, { expires: 7 });
       appDispatch({ type: "isLogged", payload: true })
-
       navigate("/home")
     } catch (error) {
-      setErrorMessage(error.response.data.errMessage)
-      setOpen(true)
+      if (error.response) {
+        appDispatch({ type: "messages", payload: { message: error.response.data.errMessage, type: "error" } })
+      } else {
+        appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
+      }
     }
   }
 
