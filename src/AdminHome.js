@@ -197,7 +197,7 @@ export default function AdminHome() {
       })
       fetchData()
     } catch (error) {
-      appDispatch({ type: "isLogged", payload: false })
+      //appDispatch({ type: "isLogged", payload: false })
       if (error.response) {
         appDispatch({ type: "messages", payload: { message: error.response.data.errMessage, type: "error" } })
         if (error.response.status === 403) {

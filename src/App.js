@@ -11,6 +11,7 @@ import StateContext from "./StateContext.js"
 import React from "react"
 import Toast from "./Toast.js"
 import CheckLogin from "./CheckLogin.js"
+import PopulateTables from "./test.js"
 
 function App() {
   const initialState = {
@@ -85,6 +86,7 @@ function App() {
                 </CheckLogin>
               }
             />
+            <Route path="/populateTask" element={<PopulateTables />} />
             {/*@TODO: Add a catch all route.*/}
           </Routes>
         </BrowserRouter>

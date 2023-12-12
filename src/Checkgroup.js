@@ -15,6 +15,10 @@ export const Checkgroup = async group => {
         const res = await axios.post("http://localhost:8080/controller/checkGroup", { group: group }, config)
         return res.data
       } catch (err) {
+        //Need to check for axios error first incase server is down. In this case, err.response.status will be undefined
+        if (err.name === "AxiosError") {
+          return false
+        }
         if (err.response.status === 401) {
           return false
         }
