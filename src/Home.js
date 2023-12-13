@@ -12,9 +12,9 @@ const defaultTheme = createTheme()
 
 export default function Home() {
   const [applications, setApplications] = useState([])
-  const appDispatch = useContext(DispatchContext)
   const [editRow, setEditRow] = useState(null)
   const [groupOptions, setGroupOptions] = React.useState([])
+  const appDispatch = useContext(DispatchContext)
   const [editedApplications, setEditedApplications] = useState({})
   const [newApplication, setNewApplication] = useState({
     App_Acronym: "",
@@ -88,19 +88,11 @@ export default function Home() {
 
   const handleEdit = index => {
     setEditRow(editRow === index ? null : index)
-    if (editRow !== index) {
-      setEditedApplications({ ...editedApplications, [index]: applications[index] })
-    }
   }
 
   const handleSelectChange = (index, state, selectedOptions) => {
-    const selectedValuesString = selectedOptions.map(option => option.value).join(",")
+    const selectedValuesString = selectedOptions
     const updatedApp = { ...editedApplications[index], [state]: selectedValuesString }
-    setEditedApplications({ ...editedApplications, [index]: updatedApp })
-  }
-
-  const handleFieldChange = (e, index, field) => {
-    const updatedApp = { ...editedApplications[index], [field]: e.target.value }
     setEditedApplications({ ...editedApplications, [index]: updatedApp })
   }
 
@@ -137,16 +129,14 @@ export default function Home() {
     }
   }
 
-  const handleSave = async index => {
+  const handleSave = updatedApp => {
     try {
-      const updatedApp = editedApplications[index]
-      await axios.put("http://localhost:8080/controller/updateApplication/", updatedApp, {
+      axios.put("http://localhost:8080/controller/updateApplication/", updatedApp, {
         headers: {
           Authorization: "Bearer " + Cookies.get("token")
         }
       })
-      const newApplications = [...applications]
-      newApplications[index] = updatedApp
+      const newApplications = applications.map(app => (app.App_Acronym === updatedApp.App_Acronym ? updatedApp : app))
       setApplications(newApplications)
       setEditRow(null)
     } catch (error) {
@@ -172,44 +162,85 @@ export default function Home() {
     navigate("/board", { state: { application: applications[index] } })
   }
 
-  const renderRow = (app, index) => (
-    <TableRow key={index}>
-      <TableCell align="center" style={{ minWidth: "200px" }}>
-        {app.App_Acronym}
-      </TableCell>
-      <TableCell align="center">
-        {editRow === index ? (
-          <Box>
-            <TextField type="date" value={editedApplications[index]?.App_startDate || app.App_startDate} onChange={e => handleFieldChange(e, index, "App_startDate")} />
-            <TextField type="date" value={editedApplications[index]?.App_endDate || app.App_endDate} onChange={e => handleFieldChange(e, index, "App_endDate")} />
-          </Box>
-        ) : (
-          `${formatDate(app.App_startDate)} - ${formatDate(app.App_endDate)}`
-        )}
-      </TableCell>
-      <TableCell align="center">{app.App_Rnumber}</TableCell>
-      <TableCell align="center">{editRow === index ? <TextField value={editedApplications[index]?.App_Description || app.App_Description} onChange={e => handleFieldChange(e, index, "App_Description")} /> : <TextField value={app.App_Description} disabled={true} />}</TableCell>
-      {["App_permit_create", "App_permit_Open", "App_permit_toDoList", "App_permit_Doing", "App_permit_Done"].map(state => (
-        <TableCell key={state} align="center" style={{ minWidth: "200px" }}>
-          <Select defaultValue={parsePermitValues(app[state])} isDisabled={editRow !== index} name={state} options={groupOptions} className="basic-multi-select" classNamePrefix="select" styles={customSelectStyles} onChange={selectedOptions => handleSelectChange(index, state, selectedOptions)} />
+  const EditableRow = ({ app, onSave, onCancel, groupOptions, customSelectStyles, handleFieldChange, handleSelectChange }) => {
+    const [localApp, setLocalApp] = useState({ ...app })
+
+    useEffect(() => {
+      console.log(localApp)
+    }, [localApp])
+
+    const handleLocalFieldChange = (e, field) => {
+      setLocalApp({ ...localApp, [field]: e.target.value })
+    }
+
+    const handleLocalSelectChange = (selectedOptions, field) => {
+      console.log(selectedOptions, field)
+      setLocalApp({ ...localApp, [field]: selectedOptions.value })
+    }
+
+    return (
+      <TableRow key={app.App_Acronym}>
+        {/* Render editable fields */}
+        <TableCell align="center">
+          {/* App_Acronym is the primary key and can't be edited */}
+          {app.App_Acronym}
         </TableCell>
-      ))}
-      <TableCell align="center">
-        {editRow === index ? (
-          <Button variant="outlined" onClick={() => handleSave(index)}>
-            Save
-          </Button>
-        ) : (
+        <TableCell align="center">
+          <Box>
+            <TextField type="date" value={localApp.App_startDate} onChange={e => handleLocalFieldChange(e, "App_startDate")} />
+            <TextField type="date" value={localApp.App_endDate} onChange={e => handleLocalFieldChange(e, "App_endDate")} />
+          </Box>
+        </TableCell>
+        <TableCell align="center">{localApp.App_Rnumber}</TableCell>
+        <TableCell align="center">
+          <TextField value={localApp.App_Description} onChange={e => handleLocalFieldChange(e, "App_Description")} />
+        </TableCell>
+        {/* Add other editable fields similar to above */}
+        {["App_permit_create", "App_permit_Open", "App_permit_toDoList", "App_permit_Doing", "App_permit_Done"].map(state => (
+          <TableCell key={state} align="center" style={{ minWidth: "200px" }}>
+            <Select defaultValue={parsePermitValues(localApp[state])} name={state} options={groupOptions} className="basic-multi-select" classNamePrefix="select" styles={customSelectStyles} onChange={selectedOptions => handleLocalSelectChange(selectedOptions, state)} />
+          </TableCell>
+        ))}
+        <TableCell align="center">
+          <Button onClick={() => onSave(localApp)}>Save</Button>
+          <Button onClick={onCancel}>Cancel</Button>
+        </TableCell>
+      </TableRow>
+    )
+  }
+
+  const renderRow = (app, index) => {
+    if (editRow === index) {
+      return <EditableRow app={app} onSave={handleSave} onCancel={() => setEditRow(null)} groupOptions={groupOptions} customSelectStyles={customSelectStyles} />
+    }
+    return (
+      <TableRow key={app.App_Acronym}>
+        <TableCell align="center">{app.App_Acronym}</TableCell>
+        {/* Render other non-editable fields */}
+        {/* ... */}
+        <TableCell align="center">{`${formatDate(app.App_startDate)} - ${formatDate(app.App_endDate)}`}</TableCell>
+        <TableCell align="center">{app.App_Rnumber}</TableCell>
+        <TableCell align="center">
+          <TextField value={app.App_Description} disabled={true} multiline />
+        </TableCell>
+        {["App_permit_create", "App_permit_Open", "App_permit_toDoList", "App_permit_Doing", "App_permit_Done"].map(state => (
+          <TableCell key={state} align="center" style={{ minWidth: "200px" }}>
+            <Select defaultValue={parsePermitValues(app[state])} name={state} isDisabled={true} options={groupOptions} className="basic-multi-select" classNamePrefix="select" styles={customSelectStyles} onChange={selectedOptions => handleSelectChange(index, state, selectedOptions)} />
+          </TableCell>
+        ))}
+        {/* Add other non-editable fields similar to above */}
+        {/* ... */}
+        <TableCell align="center">
           <Button variant="outlined" onClick={() => handleEdit(index)}>
             Edit
           </Button>
-        )}
-        <Button variant="outlined" onClick={() => handleView(index)}>
-          Go
-        </Button>
-      </TableCell>
-    </TableRow>
-  )
+          <Button variant="outlined" onClick={() => handleView(index)}>
+            Go
+          </Button>
+        </TableCell>
+      </TableRow>
+    )
+  }
 
   // Render function for new application row
   const renderNewApplicationRow = () => (

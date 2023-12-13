@@ -16,27 +16,37 @@ import Modal from "@mui/material/Modal"
 const defaultTheme = createTheme()
 
 export default function Board({ route, navigation }) {
-  const [tasks, setTasks] = useState({})
+  const initialTaskStates = {
+    Open: [],
+    ToDo: [],
+    Doing: [],
+    Done: [],
+    Close: []
+  }
+  const [tasks, setTasks] = useState(initialTaskStates)
   const [newTask, setNewTask] = useState("")
-  const [openModal, setOpenModal] = useState(false)
+  const [openCreateTaskModal, setOpenCreateTaskModal] = useState(false)
+  const [openTaskDetailsModal, setOpenTaskDetailsModal] = useState(false)
   const [selectedTask, setSelectedTask] = useState(null)
   const [newTaskDetails, setNewTaskDetails] = useState({
     Task_name: "",
     Task_description: ""
   })
+  const [openedByArrow, setOpenedByArrow] = useState(false)
   const location = useLocation()
   const appDispatch = React.useContext(DispatchContext)
 
   const fetchData = async () => {
     try {
-      console.log(location.state.App_Acronym)
       const res = await axios.get("http://localhost:8080/controller/getTasksByApp/" + location.state.application.App_Acronym, {
         headers: {
           Authorization: "Bearer " + Cookies.get("token")
         }
       })
-      const processedTasks = processData(res.data.data)
-      setTasks(processedTasks)
+      if (res.data && res.data.data) {
+        const processedTasks = processData(res.data.data)
+        setTasks(processedTasks)
+      }
     } catch (err) {
       if (err.response) {
         appDispatch({ type: "messages", payload: { message: err.response.data.errMessage, type: "error" } })
@@ -57,9 +67,13 @@ export default function Board({ route, navigation }) {
     }
 
     data.forEach(task => {
-      const state = task.Task_state // Use the state directly as it matches the backend
+      const state = task.Task_state
       if (taskStates[state]) {
-        taskStates[state].push({ id: task.Task_id, name: task.Task_name, Plan_color: task.Plan_color })
+        taskStates[state].push({
+          id: task.Task_id,
+          name: task.Task_name,
+          Plan_color: task.Plan_color
+        })
       }
     })
 
@@ -74,8 +88,8 @@ export default function Board({ route, navigation }) {
     console.log(tasks)
   }, [tasks])
 
-  const handleOpenModal = () => setOpenModal(true)
-  const handleCloseModal = () => setOpenModal(false)
+  const handleOpenCreateTaskModal = () => setOpenCreateTaskModal(true)
+  const handleCloseCreateTaskModal = () => setOpenCreateTaskModal(false)
 
   const handleInputChange = e => {
     setNewTaskDetails({
@@ -103,31 +117,36 @@ export default function Board({ route, navigation }) {
     return status === "Doing" || status === "Done"
   }
 
-  const handleMoveTask = async (taskId, currentState, nextState) => {
-    let endpoint = ""
-    if (currentState === "Done" && nextState === "Doing") {
-      endpoint = "rejectTask"
-    } else if (currentState === "Doing" && nextState === "ToDo") {
-      endpoint = "returnTask"
-    } else {
-      endpoint = "promoteTask" // or another endpoint for promoting tasks
-    }
+  const handleMoveTask = async (event, task, nextState) => {
+    event.stopPropagation()
+    setSelectedTask({ ...task, nextState }) // Include the nextState for promoting/demoting
+    setOpenedByArrow(true) // Set to true when opened by arrow click
+    setOpenTaskDetailsModal(true)
 
-    try {
-      const res = await axios.put(
-        `http://localhost:8080/controller/${endpoint}/${taskId}`,
-        {}, // Add any required body data
-        { headers: { Authorization: "Bearer " + Cookies.get("token") } }
-      )
-      console.log(res.data)
-      fetchData() // Refetch data to reflect changes
-    } catch (err) {
-      if (err.response) {
-        appDispatch({ type: "messages", payload: { message: err.response.data.errMessage, type: "error" } })
-      } else {
-        appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
-      }
-    }
+    // let endpoint = ""
+    // if (currentState === "Done" && nextState === "Doing") {
+    //   endpoint = "rejectTask"
+    // } else if (currentState === "Doing" && nextState === "ToDo") {
+    //   endpoint = "returnTask"
+    // } else {
+    //   endpoint = "promoteTask" // or another endpoint for promoting tasks
+    // }
+
+    // try {
+    //   const res = await axios.put(
+    //     `http://localhost:8080/controller/${endpoint}/${taskId}`,
+    //     {}, // Add any required body data
+    //     { headers: { Authorization: "Bearer " + Cookies.get("token") } }
+    //   )
+    //   console.log(res.data)
+    //   fetchData() // Refetch data to reflect changes
+    // } catch (err) {
+    //   if (err.response) {
+    //     appDispatch({ type: "messages", payload: { message: err.response.data.errMessage, type: "error" } })
+    //   } else {
+    //     appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
+    //   }
+    // }
   }
 
   const handleCreateTask = async () => {
@@ -169,8 +188,9 @@ export default function Board({ route, navigation }) {
           Authorization: "Bearer " + Cookies.get("token")
         }
       })
+      setOpenedByArrow(false) // Set to false when opened by clicking on the task
       setSelectedTask(res.data.data)
-      setOpenModal(true) // Open the modal with task details
+      setOpenTaskDetailsModal(true)
     } catch (err) {
       if (err.response) {
         appDispatch({ type: "messages", payload: { message: err.response.data.errMessage, type: "error" } })
@@ -200,19 +220,26 @@ export default function Board({ route, navigation }) {
       setIsEditMode(!isEditMode)
     }
 
-    const handlePromoteDemote = () => {
-      // Placeholder for now
-      console.log("Promote/Demote Clicked")
+    const handlePromoteDemote = async () => {
+      if (selectedTask && selectedTask.nextState) {
+        console.log("Promoting/Demoting to:", selectedTask.nextState)
+        // Add logic to promote/demote task
+      }
     }
 
     return (
-      <Modal open={selectedTask != null} onClose={() => setSelectedTask(null)}>
+      <Modal open={openTaskDetailsModal} onClose={() => setOpenTaskDetailsModal(false)}>
         <Box sx={modalStyle}>
-          <Grid container spacing={2}>
-            <Grid item xs={4}>
+          <Grid container spacing={2} style={{ height: "100%" }}>
+            <Grid item xs={4} style={{ display: "flex", flexDirection: "column" }}>
               {/* Left side: Shorter details */}
               <Typography variant="subtitle1" style={{ fontWeight: "bold" }}>
-                Name
+                App Acronym
+              </Typography>
+              <Typography>{selectedTask?.Task_app_Acronym || "N/A"}</Typography>
+
+              <Typography variant="subtitle1" style={{ fontWeight: "bold", marginTop: "16px" }}>
+                Task Name
               </Typography>
               <Typography>{selectedTask?.Task_name || "N/A"}</Typography>
 
@@ -222,31 +249,31 @@ export default function Board({ route, navigation }) {
               <Typography>{selectedTask?.Task_id || "N/A"}</Typography>
 
               <Typography variant="subtitle1" style={{ fontWeight: "bold", marginTop: "16px" }}>
-                State
+                Task State
               </Typography>
               <Typography>{selectedTask?.Task_state || "N/A"}</Typography>
 
               <Typography variant="subtitle1" style={{ fontWeight: "bold", marginTop: "16px" }}>
-                Plan
+                Task Plan
               </Typography>
               <Typography>{selectedTask?.Task_plan || "N/A"}</Typography>
 
               <Typography variant="subtitle1" style={{ fontWeight: "bold", marginTop: "16px" }}>
-                Creator
-              </Typography>
-              <Typography>{selectedTask?.Task_creator || "N/A"}</Typography>
-
-              <Typography variant="subtitle1" style={{ fontWeight: "bold", marginTop: "16px" }}>
-                Owner
+                Task Owner
               </Typography>
               <Typography>{selectedTask?.Task_owner || "N/A"}</Typography>
+
+              <Typography variant="subtitle1" style={{ fontWeight: "bold", marginTop: "16px" }}>
+                Task Creator
+              </Typography>
+              <Typography>{selectedTask?.Task_creator || "N/A"}</Typography>
 
               <Typography variant="subtitle1" style={{ fontWeight: "bold", marginTop: "16px" }}>
                 Created
               </Typography>
               <Typography>{selectedTask?.Task_createDate || "N/A"}</Typography>
             </Grid>
-            <Grid item xs={8}>
+            <Grid item xs={8} style={{ display: "flex", flexDirection: "column" }}>
               {/* Right side: Description and Notes */}
               <Typography variant="subtitle1" style={{ fontWeight: "bold" }}>
                 Description
@@ -261,21 +288,24 @@ export default function Board({ route, navigation }) {
               {/* Additional notes field */}
               <TextField label="Notes" multiline rows={4} fullWidth margin="normal" onChange={e => setUpdatedNotes(e.target.value)} disabled={!isEditMode} />
             </Grid>
-          </Grid>
-
-          <Box display="flex" justifyContent="space-between" mt={2}>
-            <Button onClick={() => setSelectedTask(null)} color="primary" style={{ marginTop: "16px" }}>
-              Close
-            </Button>
-            <Box>
-              <Button onClick={handleEditSave} color="primary" style={{ marginRight: "8px", marginTop: "16px" }}>
-                {isEditMode ? "Save" : "Edit"}
+            <Box display="flex" justifyContent="space-between" alignItems="center" mt={2} style={{ width: "100%" }}>
+              <Button onClick={() => setSelectedTask(null)} color="primary" style={{ marginTop: "16px" }}>
+                Close
               </Button>
-              <Button onClick={handlePromoteDemote} color="secondary" style={{ marginRight: "8px", marginTop: "16px" }}>
-                Promote/Demote
-              </Button>
+              <Box>
+                {!openedByArrow && (
+                  <Button onClick={handleEditSave} color="primary" style={{ marginRight: "8px", marginTop: "16px" }}>
+                    {isEditMode ? "Save" : "Edit"}
+                  </Button>
+                )}
+                {selectedTask && selectedTask.nextState && (
+                  <Button onClick={handlePromoteDemote} color="secondary" style={{ marginRight: "8px", marginTop: "16px" }}>
+                    Promote/Demote
+                  </Button>
+                )}
+              </Box>
             </Box>
-          </Box>
+          </Grid>
         </Box>
       </Modal>
     )
@@ -292,14 +322,14 @@ export default function Board({ route, navigation }) {
             <Button variant="contained" color="primary" style={{ marginRight: 8 }}>
               Manage Plans
             </Button>
-            <Button variant="contained" color="primary" onClick={handleOpenModal}>
+            <Button variant="contained" color="primary" onClick={handleOpenCreateTaskModal}>
               Create Task
             </Button>
           </Box>
           {/* Typography aligned with the buttons */}
           <Typography variant="h4">Kanban Board</Typography>
         </Box>
-        <Modal open={openModal} onClose={handleCloseModal}>
+        <Modal open={openCreateTaskModal} onClose={handleCloseCreateTaskModal}>
           <Box sx={modalStyle}>
             <Typography variant="h6" mb={2}>
               Create New Task
@@ -307,7 +337,7 @@ export default function Board({ route, navigation }) {
             <TextField autoFocus margin="normal" id="Task_name" label="Task Name" type="text" fullWidth name="Task_name" value={newTaskDetails.Task_name} onChange={handleInputChange} />
             <TextField margin="normal" id="Task_description" label="Task Description" type="text" fullWidth multiline rows={4} name="Task_description" value={newTaskDetails.Task_description} onChange={handleInputChange} />
             <Box mt={2}>
-              <Button onClick={handleCloseModal} color="primary">
+              <Button onClick={handleCloseCreateTaskModal} color="primary">
                 Cancel
               </Button>
               <Button
@@ -324,7 +354,7 @@ export default function Board({ route, navigation }) {
         </Modal>
         <Grid container spacing={3}>
           {Object.keys(tasks).map((status, index, array) => (
-            <Grid item key={status} xs={12 / array.length}>
+            <Grid item key={status} xs={12 / array.length} style={{ height: "80vh" }}>
               <Paper elevation={3} style={{ padding: "16px", height: "100%", overflow: "auto" }}>
                 <Typography
                   variant="h6"
@@ -338,49 +368,53 @@ export default function Board({ route, navigation }) {
                 >
                   {status}
                 </Typography>
-                {tasks[status].map(task => (
-                  <Paper
-                    key={task.id}
-                    elevation={1}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "8px",
-                      marginBottom: "8px",
-                      wordWrap: "break-word",
-                      borderLeft: `6px solid ${task.Plan_color}`, // Add left border with Plan_color
-                      backgroundColor: "#fff" // Optional, set the background color if needed
-                    }}
-                    onClick={() => handleTaskClick(task.id)}
-                  >
-                    {canDemoteTask(status) && (
-                      <IconButton onClick={() => handleMoveTask(task.id, status, array[index - 1])}>
-                        <ArrowBackIcon />
-                      </IconButton>
-                    )}
-                    {/* Task Name and ID */}
-                    <Box
+                {tasks[status].length > 0 ? (
+                  tasks[status].map(task => (
+                    <Paper
+                      key={task.id}
+                      elevation={1}
                       style={{
-                        flexGrow: 1,
                         display: "flex",
-                        flexDirection: "column",
                         alignItems: "center",
-                        textAlign: "center"
+                        justifyContent: "space-between",
+                        padding: "8px",
+                        marginBottom: "8px",
+                        wordWrap: "break-word",
+                        borderLeft: `6px solid ${task.Plan_color}`,
+                        backgroundColor: "#fff"
                       }}
+                      onClick={() => handleTaskClick(task.id)}
                     >
-                      <Typography variant="body1">{task.name}</Typography>
-                      <Typography variant="body2" style={{ fontSize: "0.8em", color: "gray" }}>
-                        {task.id}
-                      </Typography>
-                    </Box>
-                    {index < array.length - 1 && (
-                      <IconButton onClick={() => handleMoveTask(task.id, status, array[index + 1])}>
-                        <ArrowForwardIcon />
-                      </IconButton>
-                    )}
-                  </Paper>
-                ))}
+                      {canDemoteTask(status) && (
+                        <IconButton onClick={event => handleMoveTask(event, task, array[index - 1])}>
+                          <ArrowBackIcon />
+                        </IconButton>
+                      )}
+                      {/* Task Name and ID */}
+                      <Box
+                        style={{
+                          flexGrow: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          textAlign: "center"
+                        }}
+                      >
+                        <Typography variant="body1">{task.name}</Typography>
+                        <Typography variant="body2" style={{ fontSize: "0.8em", color: "gray" }}>
+                          {task.id}
+                        </Typography>
+                      </Box>
+                      {index < array.length - 1 && (
+                        <IconButton onClick={event => handleMoveTask(event, task, array[index - 1])}>
+                          <ArrowForwardIcon />
+                        </IconButton>
+                      )}
+                    </Paper>
+                  ))
+                ) : (
+                  <Typography style={{ textAlign: "center", marginTop: "20px" }}>No tasks in "{status}"</Typography>
+                )}
                 {status === "open" && (
                   <div style={{ marginTop: "16px" }}>
                     <TextField label="New Task" variant="outlined" fullWidth value={newTask} onChange={e => setNewTask(e.target.value)} />

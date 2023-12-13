@@ -1,67 +1,81 @@
-import React, { useEffect } from "react"
-import { useContext } from "react"
-import DispatchContext from "./DispatchContext.js"
-import Cookies from "js-cookie"
-import axios from "axios"
+const renderRow = (app, index) => (
+  <TableRow key={index}>
+    <TableCell align="center" style={{ minWidth: "200px" }}>
+      {app.App_Acronym}
+    </TableCell>
+    <TableCell align="center">
+      {editRow === index ? (
+        <Box>
+          <TextField type="date" value={editedApplications[index]?.App_startDate || app.App_startDate} onChange={e => handleFieldChange(e, index, "App_startDate")} />
+          <TextField type="date" value={editedApplications[index]?.App_endDate || app.App_endDate} onChange={e => handleFieldChange(e, index, "App_endDate")} />
+        </Box>
+      ) : (
+        `${formatDate(app.App_startDate)} - ${formatDate(app.App_endDate)}`
+      )}
+    </TableCell>
+    <TableCell align="center">{app.App_Rnumber}</TableCell>
+    <TableCell align="center">{editRow === index ? <TextField value={editedApplications[index]?.App_Description || app.App_Description} onChange={e => handleFieldChange(e, index, "App_Description")} /> : <TextField value={app.App_Description} disabled={true} />}</TableCell>
+    {["App_permit_create", "App_permit_Open", "App_permit_toDoList", "App_permit_Doing", "App_permit_Done"].map(state => (
+      <TableCell key={state} align="center" style={{ minWidth: "200px" }}>
+        <Select defaultValue={parsePermitValues(app[state])} isDisabled={editRow !== index} name={state} options={groupOptions} className="basic-multi-select" classNamePrefix="select" styles={customSelectStyles} onChange={selectedOptions => handleSelectChange(index, state, selectedOptions)} />
+      </TableCell>
+    ))}
+    <TableCell align="center">
+      {editRow === index ? (
+        <Button variant="outlined" onClick={() => handleSave(index)}>
+          Save
+        </Button>
+      ) : (
+        <Button variant="outlined" onClick={() => handleEdit(index)}>
+          Edit
+        </Button>
+      )}
+      <Button variant="outlined" onClick={() => handleView(index)}>
+        Go
+      </Button>
+    </TableCell>
+  </TableRow>
+)
 
-export const PopulateTables = async => {
-  const appDispatch = useContext(DispatchContext)
-  //function to populate tables
-
-  // CREATE TABLE `task` (
-  //   `Task_name` varchar(50) NOT NULL,
-  //   `Task_description` longtext NOT NULL,
-  //   `Task_notes` longtext NOT NULL,
-  //   `Task_id` varchar(50) NOT NULL,
-  //   `Task_plan` varchar(50) DEFAULT NULL,
-  //   `Task_app_Acronym` varchar(50) NOT NULL,
-  //   `Task_state` varchar(15) NOT NULL,
-  //   `Task_creator` varchar(50) NOT NULL,
-  //   `Task_owner` varchar(50) NOT NULL,
-  //   `Task_createDate` date DEFAULT (curdate()),
-  //   PRIMARY KEY (`Task_id`),
-  //   KEY `Task_app_Acronym` (`Task_app_Acronym`),
-  //   KEY `Task_plan` (`Task_plan`),
-  //   CONSTRAINT `task_ibfk_1` FOREIGN KEY (`Task_app_Acronym`) REFERENCES `application` (`App_Acronym`),
-  //   CONSTRAINT `task_ibfk_2` FOREIGN KEY (`Task_plan`) REFERENCES `plan` (`Plan_MVP_name`)
-  // ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-  const createFakeTaskData = () => {
-    const fakeTasks = []
-    for (let i = 0; i < 30; i++) {
-      fakeTasks.push({
-        Task_name: `Task ${i + 1}`,
-        Task_description: `This is a description for task ${i + 1}.`,
-        Task_notes: `Notes for task ${i + 1}.`,
-        Task_app_Acronym: `test`, // Cycles through APP-1 to APP-3
-        Task_plan: `Sprint2` // Cycles through Plan 1 to Plan 5
-      })
-    }
-    return fakeTasks
-  }
-
-  const populateTasks = async () => {
-    const fakeTasks = createFakeTaskData()
-    const config = {
-      headers: {
-        Authorization: "Bearer " + Cookies.get("token")
-      }
-    }
-    fakeTasks.forEach(async task => {
-      try {
-        await axios.post("http://localhost:8080/controller/createTask", task, config)
-        console.log(`Task ${task.Task_id} added successfully.`)
-      } catch (error) {
-        console.error(`Error adding task ${task.Task_id}:`, error)
-      }
-    })
-  }
-
-  useEffect(() => {
-    populateTasks()
-  }, [])
-
-  return <></>
-}
-
-export default PopulateTables
+// Render function for new application row
+const renderNewApplicationRow = () => (
+  <TableRow>
+    <TableCell align="center">
+      <TextField value={newApplication.App_Acronym} onChange={e => handleNewApplicationChange("App_Acronym", e.target.value)} />
+    </TableCell>
+    <TableCell align="center">
+      <Box>
+        <TextField type="date" value={newApplication.App_startDate} onChange={e => handleNewApplicationChange("App_startDate", e.target.value)} />
+        <TextField type="date" value={newApplication.App_endDate} onChange={e => handleNewApplicationChange("App_endDate", e.target.value)} />
+      </Box>
+    </TableCell>
+    <TableCell align="center">
+      <TextField value={newApplication.App_Rnumber} onChange={e => handleNewApplicationChange("App_Rnumber", e.target.value)} />
+    </TableCell>
+    <TableCell align="center">
+      <TextField value={newApplication.App_Description} onChange={e => handleNewApplicationChange("App_Description", e.target.value)} />
+    </TableCell>
+    {/* ... Select fields for permit values */}
+    {["App_permit_create", "App_permit_Open", "App_permit_toDoList", "App_permit_Doing", "App_permit_Done"].map(state => (
+      <TableCell key={state} align="center" style={{ minWidth: "200px" }}>
+        <Select
+          value={groupOptions.filter(option => newApplication[state]?.includes(option.value))}
+          name={state}
+          options={groupOptions}
+          className="basic-multi-select"
+          classNamePrefix="select"
+          styles={customSelectStyles}
+          onChange={event =>
+            //combine the values into a comma separated string
+            setNewApplication({ ...newApplication, [state]: event.value })
+          }
+        />
+      </TableCell>
+    ))}
+    <TableCell align="center">
+      <Button variant="outlined" onClick={handleCreateApplication}>
+        Create
+      </Button>
+    </TableCell>
+  </TableRow>
+)
