@@ -135,7 +135,7 @@ function Tasks() {
     return (
         <>
         <Navbar />
-        <Grid container style={{ paddingBottom: "8px"}}>
+        <Grid container style={{ paddingBottom: "35px"}}>
             <Grid item xs={12}>
                 <Typography variant="h6" align="center">
                     App {app && app.App_Acronym}
@@ -156,11 +156,10 @@ function Tasks() {
             </Grid>
             }
         </Grid>
-        <div className="task-ui">
-            <Grid container spacing={3}>
+        <Grid container spacing={3} style={{overflowY: "auto", width: "100%", paddingLeft : "20px"}}>
             {Object.keys(tasks).map((status, index, array) => (
-                <Grid item key={index} xs={12 / array.length} style={{ height: "80vh" }}>
-                    <Paper elevation={3} style={{ padding: "16px", height: "100%", overflow: "auto" }}>
+                <Grid item key={index} xs={12 / array.length} style={{ height: "70vh", padding : "0"}}>
+                    <Paper elevation={3} style={{ padding: "16px", height: "100%", overflow: "auto", margin : "0px 10px"}}>
                         <Typography variant="h6" gutterBottom align="center" style={{ borderBottom: "2px solid #ccc", padding: "8px", borderRadius: "4px"}}>
                             {status}
                         </Typography>
@@ -195,8 +194,7 @@ function Tasks() {
                     </Paper>
                 </Grid>
             ))}
-            </Grid>
-        </div>
+        </Grid>
         </>
     );
 }
