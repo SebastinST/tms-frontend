@@ -1,3 +1,8 @@
+.task-ui {
+    overflow-y: auto;
+    width: 100%;
+    padding: 0px 20px;
+}
 .tasks-header {
     width: 100%;
     display: flex;
@@ -8,5 +13,5 @@
 
 .plans-button {
     align-self: flex-start;
-    margin-left: 20px;
+    margin-left: 40px;
 }
