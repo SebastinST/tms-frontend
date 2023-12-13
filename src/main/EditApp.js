@@ -129,13 +129,13 @@ function EditApp(props) {
                         : <Button type="button" size="small" variant="outlined" onClick={toggleEditing}>Cancel</Button>
                     :   <Button type="button" size="small" variant="outlined" onClick={toggleEditing}>Edit</Button>
                     }
-                    <Button type="button" size="small" variant="contained" onClick={()=>alert("Going to app")}color="success">GO</Button>
+                    <Button type="button" size="small" variant="contained" onClick={() => navigate('/tasks', { state : app })} color="success">GO</Button>
                 </div>
             );
         } else {
             return (
                 <div className="apps-table-buttons">
-                    <Button type="button" size="small" variant="contained" onClick={()=>alert("Going to app")}color="success">GO</Button>
+                    <Button type="button" size="small" variant="contained" onClick={() => navigate('/tasks', { state : app })} color="success">GO</Button>
                 </div>
             )
         }
@@ -211,7 +211,10 @@ function EditApp(props) {
                             ?   <div>
                                 <TextField name="App_startDate" size="small" label="Start" value={inputs.App_startDate || ""} onChange={handleChange}/> <TextField name="App_endDate" size="small" label="End" value={inputs.App_endDate || ""} onChange={handleChange}/>
                                 </div>
-                            : [app.startDate, app.endDate]
+                            : <div>
+                            Start: {app.App_startDate}<br/>
+                            End: {app.App_endDate}
+                            </div>
                             }
                         </TableCell>
                         <TableCell align="center" style={{ width: "5%" }}>
