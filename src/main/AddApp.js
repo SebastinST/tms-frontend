@@ -142,14 +142,14 @@ function AddApp(props) {
                             <TextField name="App_Acronym" required size="small" label="App " value={inputs.App_Acronym || ""} onChange={handleChange}/>
                         </TableCell>
                         <TableCell align="center" style={{ width: "5%" }}>
-                            <TextField name="Start" required size="small" label="Start" value={inputs.App_startDate || ""} onChange={handleChange}/>
-                            <TextField name="End" required size="small" label="End" value={inputs.App_endDate || ""} onChange={handleChange}/>
+                            <TextField name="Start" size="small" label="Start" value={inputs.App_startDate || ""} onChange={handleChange}/>
+                            <TextField name="End" size="small" label="End" value={inputs.App_endDate || ""} onChange={handleChange}/>
                         </TableCell>
                         <TableCell align="center" style={{ width: "5%" }}>
                             <TextField name="App_Rnumber" required size="small" label="Rnum" value={inputs.App_Rnumber || ""} onChange={handleChange}/>
                         </TableCell>
                         <TableCell style={{ width: "25%" }}>
-                            <TextField minRows={4} name="App_Description" size="small" label="App Description" value={inputs.App_Description || ""} onChange={handleChange}/>
+                            <TextField name="App_Description" required size="small" label="App Description" value={inputs.App_Description || ""} onChange={handleChange}/>
                         </TableCell>
                         <TableCell align="center" style={{ width: "8%" }}>
                             <Select
