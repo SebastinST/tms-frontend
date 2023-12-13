@@ -1,0 +1,12 @@
+.tasks-header {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.plans-button {
+    align-self: flex-start;
+    margin-left: 20px;
+}

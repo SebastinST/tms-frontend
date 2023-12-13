@@ -4,6 +4,8 @@ import Login from './login/Login';
 import Main from './main/Main';
 import Admin from './admin/Admin';
 import Profile from './profile/Profile';
+import Tasks from './tasks/Tasks';
+import Plans from './plans/Plans';
 import ValidateUser from './components/ValidateUser';
 
 // External
@@ -22,6 +24,8 @@ function App() {
             <Route path="/main" element={<ValidateUser><Main /></ValidateUser>} />
             <Route path="/admin" element={<ValidateUser group={"admin"}><Admin /></ValidateUser>} />
             <Route path="/profile" element={<ValidateUser><Profile /></ValidateUser>} />
+            <Route path="/tasks" element={<ValidateUser><Tasks /></ValidateUser>} />
+            <Route path="/plans" element={<ValidateUser group={"pm"}><Plans /></ValidateUser>} />
             <Route path="*" element={<Login />} />
           </Routes>
         </BrowserRouter>
