@@ -129,13 +129,13 @@ function EditApp(props) {
                         : <Button type="button" size="small" variant="outlined" onClick={toggleEditing}>Cancel</Button>
                     :   <Button type="button" size="small" variant="outlined" onClick={toggleEditing}>Edit</Button>
                     }
-                    <Button type="button" size="small" variant="contained" onClick={()=>alert("Going to app")}color="success">Open</Button>
+                    <Button type="button" size="small" variant="contained" onClick={()=>alert("Going to app")}color="success">GO</Button>
                 </div>
             );
         } else {
             return (
                 <div className="apps-table-buttons">
-                    <Button type="button" size="small" variant="contained" onClick={()=>alert("Going to app")}color="success">Open</Button>
+                    <Button type="button" size="small" variant="contained" onClick={()=>alert("Going to app")}color="success">GO</Button>
                 </div>
             )
         }
