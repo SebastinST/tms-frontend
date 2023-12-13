@@ -32,18 +32,38 @@ function EditApp(props) {
     const [editing, setEditing] = useState(false);
     const [changedInputs, setChangedInputs] = useState(false);
     
-    // Get all groups available on load and if any new group is added
+    // If user is PL, get all groups available on load and if any new group is added
     useEffect(() => {
-        try {
-            const getGroupOptions = async() => {
-                const result = await Axios.get("http://localhost:8000/getAllGroups", 
-                    {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
-                ).catch((e)=>{
+        if (isPL) {
+            try {
+                const getGroupOptions = async() => {
+                    const result = await Axios.get("http://localhost:8000/getAllGroups", 
+                        {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
+                    ).catch((e)=>{
+                        if (e.response.status === 401) {
+                            Cookies.remove('jwt-token');
+                            navigate("/");
+                        }
+            
+                        let error = e.response.data
+                        if (error) {
+                            // Show error message
+                            toast.error(error.message, {
+                                autoClose: false,
+                            });
+                        }
+                    });
+                    setGroupOptions(result.data.data.map(group => (
+                        { value: group.group_name, label: group.group_name }
+                    )))
+                }
+                getGroupOptions();
+            } catch (e) {
+                try {
                     if (e.response.status === 401) {
                         Cookies.remove('jwt-token');
                         navigate("/");
                     }
-        
                     let error = e.response.data
                     if (error) {
                         // Show error message
@@ -51,29 +71,11 @@ function EditApp(props) {
                             autoClose: false,
                         });
                     }
-                });
-                setGroupOptions(result.data.data.map(group => (
-                    { value: group.group_name, label: group.group_name }
-                )))
-            }
-            getGroupOptions();
-        } catch (e) {
-            try {
-                if (e.response.status === 401) {
-                    Cookies.remove('jwt-token');
-                    navigate("/");
-                }
-                let error = e.response.data
-                if (error) {
-                    // Show error message
-                    toast.error(error.message, {
+                } catch (e) {
+                    toast.error(e, {
                         autoClose: false,
                     });
                 }
-            } catch (e) {
-                toast.error(e, {
-                    autoClose: false,
-                });
             }
         }
     }, [])
