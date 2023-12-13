@@ -2,6 +2,7 @@
 import './Tasks.css';
 import Navbar from '../components/Navbar';
 import Checkgroup from '../components/Checkgroup';
+import TaskCreationModal from './TaskCreationModal';
 
 // External
 import Button from "@mui/material/Button";
@@ -28,9 +29,16 @@ function Tasks() {
         Done: [],
         Close: []
     });
-    
+
     // Get app details from previous link here
     const app = useLocation().state;
+    
+    // State variables for modals
+    const [isTaskCreationModalOpen, setIsTaskCreationModalOpen] = useState(false);
+
+    useEffect(() => {
+        console.log(isTaskCreationModalOpen);
+    },[isTaskCreationModalOpen])
     
     useEffect(() => {
         // Check if app is valid, if not push to main page
@@ -150,7 +158,7 @@ function Tasks() {
             }
             {isPL && 
             <Grid item xs={2} style={{ paddingLeft: "20px"}}>
-                <Button type="button" size="small" variant="contained" onClick={() => alert("Opening task creation modal")}color="success">
+                <Button type="button" size="small" variant="contained" onClick={() => setIsTaskCreationModalOpen(true)} color="success">
                     Create Task
                 </Button>
             </Grid>
@@ -195,6 +203,11 @@ function Tasks() {
                 </Grid>
             ))}
         </Grid>
+        <TaskCreationModal 
+            app={app}
+            isTaskCreationModalOpen={isTaskCreationModalOpen} 
+            setIsTaskCreationModalOpen={setIsTaskCreationModalOpen}
+        />
         </>
     );
 }
