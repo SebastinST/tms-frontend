@@ -349,6 +349,23 @@ function TaskDetailModal({
         setEditing(false);
     }
 
+    const actionButton = () => {
+        // if task is in close state, do not display edit button
+        if (task.Task_state != "Close") {
+            // if user is editing render either 'cancel' or 'save' depending on whether inputs have been changed
+            if (editing) {
+                if (changedInputs) {
+                    return (<Button onClick={handleSubmit} variant="contained" color="success">Save</Button>)
+                } else {
+                    return (<Button type="button" variant="outlined" onClick={toggleEditing}>Cancel</Button>)
+                }
+            // show 'edit' button for user to start editing
+            } else {
+                return (<Button type="button" variant="outlined" onClick={toggleEditing}>Edit</Button>)
+            }
+        }
+    }
+
     return (
     <Modal open={isTaskDetailModalOpen} onClose={handleCloseModal}>
         <Box sx={modalStyle}>
@@ -426,12 +443,7 @@ function TaskDetailModal({
                 <Button onClick={handleCloseModal} color="primary">
                     Close
                 </Button>
-                {editing
-                ?   changedInputs
-                    ? <Button onClick={handleSubmit} variant="contained" color="success">Save</Button>
-                    : <Button type="button" variant="outlined" onClick={toggleEditing}>Cancel</Button>
-                :   <Button type="button" variant="outlined" onClick={toggleEditing}>Edit</Button>
-                }
+                {actionButton()}
             </Box>
         </Box>
     </Modal>
