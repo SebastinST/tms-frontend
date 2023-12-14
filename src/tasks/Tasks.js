@@ -3,6 +3,7 @@ import './Tasks.css';
 import Navbar from '../components/Navbar';
 import Checkgroup from '../components/Checkgroup';
 import TaskCreationModal from './TaskCreationModal';
+import TaskDetailModal from './TaskDetailModal';
 
 // External
 import Button from "@mui/material/Button";
@@ -35,6 +36,8 @@ function Tasks() {
     
     // State variables for modals
     const [isTaskCreationModalOpen, setIsTaskCreationModalOpen] = useState(false);
+    const [isTaskDetailModalOpen, setIsTaskDetailModalOpen] = useState(false);
+    const [currentTaskId, setCurrentTaskId] = useState("");
     
     useEffect(() => {
         // Check if app is valid, if not push to main page
@@ -136,23 +139,29 @@ function Tasks() {
         setRefreshTasks(false);
     }, [refreshTasks]);
 
+    const openTaskDetailModal = (Task_id) => {
+        setCurrentTaskId(Task_id);
+        setIsTaskDetailModalOpen(true);
+    }
+
     const taskLists = Object.keys(tasks).map((status, index, array) => (
         <Grid item key={index} xs={12 / array.length} style={{ height: "70vh", padding : "0"}}>
-            <Paper elevation={3} style={{ padding: "16px", height: "100%", overflow: "auto", margin : "0px 10px"}}>
+            <Paper elevation={3} style={{ padding: "16px", height: "100%", overflow: "auto", margin : "0px 10px"}} >
                 <Typography variant="h6" gutterBottom align="center" style={{ borderBottom: "2px solid #ccc", padding: "8px", borderRadius: "4px"}}>
                     {status}
                 </Typography>
                 {tasks[status].length > 0 
                 && (tasks[status].map(task => (
-                    <Paper key={task.Task_id} onClick={() => alert(task.Task_id)} elevation={1} style={{
+                    <Paper key={task.Task_id} onClick={() => openTaskDetailModal(task.Task_id)} elevation={1} style={{
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
                         padding: "8px",
                         marginBottom: "8px",
                         wordWrap: "break-word",
-                        borderLeft: `6px solid ${task.Plan_color}`,
-                        backgroundColor: "#fff"
+                        borderTop: `6px solid ${task.Plan_color}`,
+                        backgroundColor: "#fff",
+                        cursor : "pointer"
                     }}>
                         <Box style={{
                             flexGrow: 1,
@@ -205,6 +214,13 @@ function Tasks() {
             app={app}
             isTaskCreationModalOpen={isTaskCreationModalOpen} 
             setIsTaskCreationModalOpen={setIsTaskCreationModalOpen}
+            setRefreshTasks={setRefreshTasks}
+        />
+        <TaskDetailModal
+            currentTaskId={currentTaskId}
+            app={app}
+            isTaskDetailModalOpen={isTaskDetailModalOpen}
+            setIsTaskDetailModalOpen={setIsTaskDetailModalOpen}
             setRefreshTasks={setRefreshTasks}
         />
         </>
