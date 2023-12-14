@@ -16,6 +16,8 @@ import 'react-toastify/dist/ReactToastify.css';
 function App() {
 
   return (
+    <>
+    <ToastContainer closeOnClick theme="colored" autoClose={1000} />
     <div className="App">
       <div className="container">
         <BrowserRouter>
@@ -30,8 +32,8 @@ function App() {
           </Routes>
         </BrowserRouter>
       </div>
-      <ToastContainer closeOnClick theme="colored" autoClose={1000}/>
     </div>
+    </>
   );
 }
 
