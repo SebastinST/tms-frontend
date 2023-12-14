@@ -11,6 +11,9 @@ import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import IconButton from '@mui/material/IconButton';
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useState, useEffect } from 'react';
 import Axios from 'axios';
 import Cookies from 'js-cookie';
@@ -107,9 +110,10 @@ function Tasks() {
                         const state = task.Task_state
                         if (newTasks[state]) {
                             newTasks[state].push({
-                            Task_id: task.Task_id,
-                            Task_name: task.Task_name,
-                            Plan_color: task.Plan_color
+                                Task_id: task.Task_id,
+                                Task_name: task.Task_name,
+                                Task_state: task.Task_state,
+                                Plan_color: task.Plan_color
                             })
                         }
                     })
@@ -143,16 +147,20 @@ function Tasks() {
         setCurrentTaskId(Task_id);
         setIsTaskDetailModalOpen(true);
     }
+    
+    const openTaskMoveModal = (move, Task_id) => {
+        alert(move + " " + Task_id);
+    }
 
-    const taskLists = Object.keys(tasks).map((status, index, array) => (
+    const taskLists = Object.keys(tasks).map((state, index, array) => (
         <Grid item key={index} xs={12 / array.length} style={{ height: "70vh", padding : "0"}}>
             <Paper elevation={3} style={{ padding: "16px", height: "100%", overflow: "auto", margin : "0px 10px"}} >
                 <Typography variant="h6" gutterBottom align="center" style={{ borderBottom: "2px solid #ccc", padding: "8px", borderRadius: "4px"}}>
-                    {status}
+                    {state}
                 </Typography>
-                {tasks[status].length > 0 
-                && (tasks[status].map(task => (
-                    <Paper key={task.Task_id} onClick={() => openTaskDetailModal(task.Task_id)} elevation={1} style={{
+                {tasks[state].length > 0 
+                && (tasks[state].map(task => (
+                    <Paper key={task.Task_id} elevation={1} style={{
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
@@ -161,8 +169,12 @@ function Tasks() {
                         wordWrap: "break-word",
                         borderTop: `6px solid ${task.Plan_color}`,
                         backgroundColor: "#fff",
-                        cursor : "pointer"
                     }}>
+                        {(state === "Done" || state === "Doing") && 
+                            <IconButton onClick={() => openTaskMoveModal("demote",task.Task_id)}>
+                                <ArrowBackIcon />
+                            </IconButton>
+                        }
                         <Box style={{
                             flexGrow: 1,
                             display: "flex",
@@ -170,13 +182,18 @@ function Tasks() {
                             alignItems: "center",
                             textAlign: "center"
                         }}>
-                            <Typography variant="body1">
+                            <Typography variant="body1" onClick={() => openTaskDetailModal(task.Task_id)} style={{cursor : "pointer"}}>
                                 {task.Task_name}
                             </Typography>
                             <Typography variant="body2" style={{ fontSize: "0.8em", color: "gray" }}>
                                 {task.Task_id}
                             </Typography>
                         </Box>
+                        {(state != "Close") &&
+                            <IconButton onClick={() => openTaskMoveModal("promote",task.Task_id)}>
+                                <ArrowForwardIcon />
+                            </IconButton>
+                        }
                     </Paper>
                 )))}
             </Paper>
