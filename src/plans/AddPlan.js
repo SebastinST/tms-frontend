@@ -55,7 +55,6 @@ function AddPlan(props) {
     // Handle saving of changed current inputs from user to DB
     const handleSubmit = async() => {
         try {
-            console.log(inputs);
             let result = await Axios.post(
                 'http://localhost:8000/createPlan',
                 inputs, 
