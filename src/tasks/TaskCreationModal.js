@@ -23,23 +23,25 @@ const modalStyle = {
     boxShadow: 24,
     p: 4,
     outline: "none",
-    overflowY: "auto" // Add scroll if content is too long
+    overflowY: "auto", // Add scroll if content is too long
+    display: "flex",
+    flexDirection: "column"
 }
 
 function TaskCreationModal({
     app,
     isTaskCreationModalOpen,
     setIsTaskCreationModalOpen,
+    setRefreshTasks
 }) {
     const navigate = useNavigate();
 
-    // store inputs to be sent on update to DB
-    const [inputs, setInputs] = useState({});
-
-    useEffect(() => {
-        // Add associated app acronym
-        setInputs(values => ({...values, "Task_app_Acronym": app.App_Acronym}));
-    }, [app])
+    // store inputs to be sent on update to DB with associated app acronym
+    const [inputs, setInputs] = useState({
+        "Task_app_Acronym": app.App_Acronym,
+        "Task_name" : "",
+        "Task_description" : ""
+    });
 
     // Handle input field changes
     const handleChange = (event) => {
@@ -71,6 +73,7 @@ function TaskCreationModal({
             });
             if (result) {
                 toast.success(result.data.message);
+                setRefreshTasks(true);
                 setIsTaskCreationModalOpen(false);
                 setInputs({});
             }
@@ -82,7 +85,7 @@ function TaskCreationModal({
                 }
                 
                 if (e.response.status === 403) {
-                    setIsTaskCreationModalOpen(false)
+                    setIsTaskCreationModalOpen(false);
                     setInputs({});
                 }
 
@@ -104,14 +107,14 @@ function TaskCreationModal({
     return (
         <Modal open={isTaskCreationModalOpen} onClose={() => setIsTaskCreationModalOpen(false)}>
           <Box sx={modalStyle}>
-            <Typography variant="h6" mb={2}>
-              Create New Task
+            <Typography variant="h6" align="center" mb={2}>
+              Create Task for App {app.App_Acronym}
             </Typography>
-            <TextField autoFocus margin="normal" id="Task_name" label="Task Name" type="text" fullWidth name="Task_name" value={inputs.Task_name} onChange={handleChange} />
-            <TextField margin="normal" id="Task_description" label="Task Description" type="text" fullWidth multiline rows={4} name="Task_description" value={inputs.Task_description} onChange={handleChange} />
-            <Box mt={2}>
-              <Button onClick={setIsTaskCreationModalOpen(false)} color="primary">
-                Cancel
+            <TextField autoFocus margin="normal" label="Task Name" fullWidth name="Task_name" value={inputs.Task_name} onChange={handleChange} />
+            <TextField margin="normal" label="Task Description" fullWidth multiline rows={10} name="Task_description" value={inputs.Task_description} onChange={handleChange} style={{flex:1}}/>
+            <Box mt={2} style={{display:"flex", justifyContent:"space-between"}}>
+              <Button onClick={() => setIsTaskCreationModalOpen(false)} color="primary">
+                Close
               </Button>
               <Button onClick={handleSubmit} color="primary" style={{ marginLeft: "10px" }}>
                 Create

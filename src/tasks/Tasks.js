@@ -35,10 +35,6 @@ function Tasks() {
     
     // State variables for modals
     const [isTaskCreationModalOpen, setIsTaskCreationModalOpen] = useState(false);
-
-    useEffect(() => {
-        console.log(isTaskCreationModalOpen);
-    },[isTaskCreationModalOpen])
     
     useEffect(() => {
         // Check if app is valid, if not push to main page
@@ -140,6 +136,44 @@ function Tasks() {
         setRefreshTasks(false);
     }, [refreshTasks]);
 
+    const taskLists = Object.keys(tasks).map((status, index, array) => (
+        <Grid item key={index} xs={12 / array.length} style={{ height: "70vh", padding : "0"}}>
+            <Paper elevation={3} style={{ padding: "16px", height: "100%", overflow: "auto", margin : "0px 10px"}}>
+                <Typography variant="h6" gutterBottom align="center" style={{ borderBottom: "2px solid #ccc", padding: "8px", borderRadius: "4px"}}>
+                    {status}
+                </Typography>
+                {tasks[status].length > 0 
+                && (tasks[status].map(task => (
+                    <Paper key={task.Task_id} onClick={() => alert(task.Task_id)} elevation={1} style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "8px",
+                        marginBottom: "8px",
+                        wordWrap: "break-word",
+                        borderLeft: `6px solid ${task.Plan_color}`,
+                        backgroundColor: "#fff"
+                    }}>
+                        <Box style={{
+                            flexGrow: 1,
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            textAlign: "center"
+                        }}>
+                            <Typography variant="body1">
+                                {task.Task_name}
+                            </Typography>
+                            <Typography variant="body2" style={{ fontSize: "0.8em", color: "gray" }}>
+                                {task.Task_id}
+                            </Typography>
+                        </Box>
+                    </Paper>
+                )))}
+            </Paper>
+        </Grid>
+    ));
+
     return (
         <>
         <Navbar />
@@ -165,48 +199,13 @@ function Tasks() {
             }
         </Grid>
         <Grid container spacing={3} style={{overflowY: "auto", width: "100%", paddingLeft : "20px"}}>
-            {Object.keys(tasks).map((status, index, array) => (
-                <Grid item key={index} xs={12 / array.length} style={{ height: "70vh", padding : "0"}}>
-                    <Paper elevation={3} style={{ padding: "16px", height: "100%", overflow: "auto", margin : "0px 10px"}}>
-                        <Typography variant="h6" gutterBottom align="center" style={{ borderBottom: "2px solid #ccc", padding: "8px", borderRadius: "4px"}}>
-                            {status}
-                        </Typography>
-                        {tasks[status].length > 0 
-                        && (tasks[status].map(task => (
-                            <Paper key={task.Task_id} onClick={() => alert(task.Task_id)} elevation={1} style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                padding: "8px",
-                                marginBottom: "8px",
-                                wordWrap: "break-word",
-                                borderLeft: `6px solid ${task.Plan_color}`,
-                                backgroundColor: "#fff"
-                            }}>
-                                <Box style={{
-                                    flexGrow: 1,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
-                                    textAlign: "center"
-                                }}>
-                                    <Typography variant="body1">
-                                        {task.Task_name}
-                                    </Typography>
-                                    <Typography variant="body2" style={{ fontSize: "0.8em", color: "gray" }}>
-                                        {task.Task_id}
-                                    </Typography>
-                                </Box>
-                            </Paper>
-                        )))}
-                    </Paper>
-                </Grid>
-            ))}
+            {taskLists}
         </Grid>
         <TaskCreationModal 
             app={app}
             isTaskCreationModalOpen={isTaskCreationModalOpen} 
             setIsTaskCreationModalOpen={setIsTaskCreationModalOpen}
+            setRefreshTasks={setRefreshTasks}
         />
         </>
     );
