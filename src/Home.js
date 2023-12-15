@@ -5,8 +5,10 @@ import Cookies from "js-cookie"
 import { createTheme, ThemeProvider } from "@mui/material/styles"
 import { CssBaseline, Container, Box, Grid, Button, Table, TableBody, TableCell, TableHead, TableRow, TableContainer, Paper } from "@mui/material"
 import DispatchContext from "./DispatchContext"
+import StateContext from "./StateContext"
 import TextField from "@mui/material/TextField"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
+import Checkgroup from "./Checkgroup"
 
 const defaultTheme = createTheme()
 
@@ -15,6 +17,7 @@ export default function Home() {
   const [editRow, setEditRow] = useState(null)
   const [groupOptions, setGroupOptions] = React.useState([])
   const appDispatch = useContext(DispatchContext)
+  const appState = useContext(StateContext)
   const [editedApplications, setEditedApplications] = useState({})
   const [newApplication, setNewApplication] = useState({
     App_Acronym: "",
@@ -29,6 +32,30 @@ export default function Home() {
     App_permit_Done: null
   })
   const navigate = useNavigate()
+  const location = useLocation()
+  const [isUserPL, setIsUserPL] = useState(false)
+
+  useEffect(() => {
+    const checkUserGroup = async () => {
+      const isPL = await Checkgroup.Checkgroup("PL")
+      setIsUserPL(isPL)
+    }
+
+    if (appState.isLogged) {
+      checkUserGroup()
+    }
+  }, [location, appState.isLogged])
+
+  useEffect(() => {
+    // This code will run only on updates, not the initial render
+    if (appState.isLogged === false) {
+      navigate("/")
+    }
+    if (appState.isLogged) {
+      fetchData()
+      getGroups()
+    }
+  }, [appState.isLogged])
 
   const customSelectStyles = {
     control: provided => ({
@@ -81,11 +108,6 @@ export default function Home() {
     return { value: value.group_name, label: value.group_name }
   }
 
-  useEffect(() => {
-    fetchData()
-    getGroups()
-  }, [])
-
   const handleEdit = index => {
     setEditRow(editRow === index ? null : index)
   }
@@ -104,7 +126,7 @@ export default function Home() {
     try {
       // Make POST request to create a new application
       // Adjust the API endpoint and request body as per your backend
-      await axios.post("http://localhost:8080/controller/createApplication", newApplication, {
+      const res = await axios.post("http://localhost:8080/controller/createApplication", newApplication, {
         headers: {
           Authorization: "Bearer " + Cookies.get("token")
         }
@@ -124,6 +146,7 @@ export default function Home() {
         App_permit_Doing: "",
         App_permit_Done: ""
       })
+      appDispatch({ type: "messages", payload: { message: res.data.message, type: "success" } })
     } catch (error) {
       appDispatch({ type: "messages", payload: { message: error.response.data.errMessage, type: "error" } })
     }
@@ -145,6 +168,8 @@ export default function Home() {
   }
 
   const formatDate = dateString => {
+    //check if dateString is empty
+    if (!dateString) return "N/A"
     const date = new Date(dateString)
     const formattedDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
     return formattedDate
@@ -165,16 +190,11 @@ export default function Home() {
   const EditableRow = ({ app, onSave, onCancel, groupOptions, customSelectStyles, handleFieldChange, handleSelectChange }) => {
     const [localApp, setLocalApp] = useState({ ...app })
 
-    useEffect(() => {
-      console.log(localApp)
-    }, [localApp])
-
     const handleLocalFieldChange = (e, field) => {
       setLocalApp({ ...localApp, [field]: e.target.value })
     }
 
     const handleLocalSelectChange = (selectedOptions, field) => {
-      console.log(selectedOptions, field)
       setLocalApp({ ...localApp, [field]: selectedOptions.value })
     }
 
@@ -186,24 +206,36 @@ export default function Home() {
           {app.App_Acronym}
         </TableCell>
         <TableCell align="center">
-          <Box>
+          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
             <TextField type="date" value={localApp.App_startDate} onChange={e => handleLocalFieldChange(e, "App_startDate")} />
             <TextField type="date" value={localApp.App_endDate} onChange={e => handleLocalFieldChange(e, "App_endDate")} />
           </Box>
         </TableCell>
         <TableCell align="center">{localApp.App_Rnumber}</TableCell>
         <TableCell align="center">
-          <TextField value={localApp.App_Description} onChange={e => handleLocalFieldChange(e, "App_Description")} />
+          <TextField
+            value={localApp.App_Description}
+            onChange={e => handleLocalFieldChange(e, "App_Description")}
+            fullWidth
+            multiline
+            rows={6} // Adjust the number of rows as needed
+          />
         </TableCell>
         {/* Add other editable fields similar to above */}
         {["App_permit_create", "App_permit_Open", "App_permit_toDoList", "App_permit_Doing", "App_permit_Done"].map(state => (
-          <TableCell key={state} align="center" style={{ minWidth: "200px" }}>
+          <TableCell key={state} align="center" style={{ minWidth: "100px" }}>
             <Select defaultValue={parsePermitValues(localApp[state])} name={state} options={groupOptions} className="basic-multi-select" classNamePrefix="select" styles={customSelectStyles} onChange={selectedOptions => handleLocalSelectChange(selectedOptions, state)} />
           </TableCell>
         ))}
         <TableCell align="center">
-          <Button onClick={() => onSave(localApp)}>Save</Button>
-          <Button onClick={onCancel}>Cancel</Button>
+          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <Button variant="outlined" onClick={() => onSave(localApp)}>
+              Save
+            </Button>
+            <Button variant="outlined" onClick={onCancel}>
+              Cancel
+            </Button>
+          </Box>
         </TableCell>
       </TableRow>
     )
@@ -218,25 +250,54 @@ export default function Home() {
         <TableCell align="center">{app.App_Acronym}</TableCell>
         {/* Render other non-editable fields */}
         {/* ... */}
-        <TableCell align="center">{`${formatDate(app.App_startDate)} - ${formatDate(app.App_endDate)}`}</TableCell>
-        <TableCell align="center">{app.App_Rnumber}</TableCell>
         <TableCell align="center">
-          <TextField value={app.App_Description} disabled={true} multiline />
+          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <TextField
+              type="date"
+              value={app.App_startDate}
+              sx={{ width: "150px" }} // Standard width for date fields
+              disabled
+            />
+            <TextField
+              type="date"
+              value={app.App_endDate}
+              sx={{ width: "150px" }} // Standard width for date fields
+              disabled
+            />
+          </Box>
+        </TableCell>
+        <TableCell align="center" sx={{ width: "50px" }}>
+          {app.App_Rnumber}
+        </TableCell>
+
+        <TableCell align="center">
+          <TextField
+            value={app.App_Description}
+            fullWidth
+            multiline
+            disabled
+            rows={6} // Adjust the number of rows as needed
+            sx={{ minWidth: "200px" }}
+          />
         </TableCell>
         {["App_permit_create", "App_permit_Open", "App_permit_toDoList", "App_permit_Doing", "App_permit_Done"].map(state => (
-          <TableCell key={state} align="center" style={{ minWidth: "200px" }}>
+          <TableCell key={state} align="center" style={{ minWidth: "100px" }}>
             <Select defaultValue={parsePermitValues(app[state])} name={state} isDisabled={true} options={groupOptions} className="basic-multi-select" classNamePrefix="select" styles={customSelectStyles} onChange={selectedOptions => handleSelectChange(index, state, selectedOptions)} />
           </TableCell>
         ))}
         {/* Add other non-editable fields similar to above */}
         {/* ... */}
         <TableCell align="center">
-          <Button variant="outlined" onClick={() => handleEdit(index)}>
-            Edit
-          </Button>
-          <Button variant="outlined" onClick={() => handleView(index)}>
-            Go
-          </Button>
+          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+            {isUserPL && (
+              <Button variant="outlined" onClick={() => handleEdit(index)}>
+                Edit
+              </Button>
+            )}
+            <Button variant="outlined" onClick={() => handleView(index)}>
+              Go
+            </Button>
+          </Box>
         </TableCell>
       </TableRow>
     )
@@ -249,12 +310,18 @@ export default function Home() {
         <TextField value={newApplication.App_Acronym} onChange={e => handleNewApplicationChange("App_Acronym", e.target.value)} />
       </TableCell>
       <TableCell align="center">
-        <Box>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center"
+          }}
+        >
           <TextField type="date" value={newApplication.App_startDate} onChange={e => handleNewApplicationChange("App_startDate", e.target.value)} />
           <TextField type="date" value={newApplication.App_endDate} onChange={e => handleNewApplicationChange("App_endDate", e.target.value)} />
         </Box>
       </TableCell>
-      <TableCell align="center">
+      <TableCell align="center" sx={{ width: "50px" }}>
         <TextField value={newApplication.App_Rnumber} onChange={e => handleNewApplicationChange("App_Rnumber", e.target.value)} />
       </TableCell>
       <TableCell align="center">
@@ -262,7 +329,7 @@ export default function Home() {
       </TableCell>
       {/* ... Select fields for permit values */}
       {["App_permit_create", "App_permit_Open", "App_permit_toDoList", "App_permit_Doing", "App_permit_Done"].map(state => (
-        <TableCell key={state} align="center" style={{ minWidth: "200px" }}>
+        <TableCell key={state} align="center" style={{ minWidth: "100px" }}>
           <Select
             value={groupOptions.filter(option => newApplication[state]?.includes(option.value))}
             name={state}
@@ -333,7 +400,7 @@ export default function Home() {
               </TableHead>
               <TableBody>
                 {/* Render the new application row */}
-                {renderNewApplicationRow()}
+                {isUserPL && renderNewApplicationRow()}
                 {/* Table body rows */}
                 {applications.length > 0 ? (
                   applications.map((app, index) => renderRow(app, index))

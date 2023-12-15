@@ -1,5 +1,5 @@
 import React from "react"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import DispatchContext from "./DispatchContext"
 import Cookies from "js-cookie"
 import { useEffect } from "react"
@@ -7,6 +7,7 @@ import axios from "axios"
 
 export const CheckLogin = ({ children }) => {
   const navigate = useNavigate()
+  const location = useLocation()
   const [token, setToken] = React.useState(Cookies.get("token"))
   const appDispatch = React.useContext(DispatchContext)
 
@@ -22,22 +23,12 @@ export const CheckLogin = ({ children }) => {
         console.log("Proper token")
         appDispatch({ type: "isLogged", payload: login.data })
       } catch (err) {
-        if(err.response){
-          if (err.response.status === 401) {
-            console.log("Improper token")
-            appDispatch({ type: "isLogged", payload: false })
-            appDispatch({ type: "messages", payload: { message: "You are not authorised", type: "error" } })
-            Cookies.remove("token")
-            navigate("/")
-          }
-        }
-        else{
-          console.log("Improper token")
-          appDispatch({ type: "isLogged", payload: false })
-          appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
-          Cookies.remove("token")
-          navigate("/")
-        }
+        const errorMessage = err.response?.status === 401 ? "You are not authorised" : "Server is down"
+        console.log("Improper token")
+        appDispatch({ type: "isLogged", payload: false })
+        appDispatch({ type: "messages", payload: { message: errorMessage, type: "error" } })
+        Cookies.remove("token")
+        navigate("/")
       }
     } else {
       console.log("No token logged out")
@@ -47,9 +38,12 @@ export const CheckLogin = ({ children }) => {
   }
 
   useEffect(() => {
-    setToken(Cookies.get("token"))
-    getLogin()
-  }, [{ children }])
+    const checkToken = async () => {
+      setToken(Cookies.get("token"))
+      await getLogin()
+    }
+    checkToken()
+  }, [location])
 
   return <>{children}</>
 }

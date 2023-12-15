@@ -11,7 +11,10 @@ import TextField from "@mui/material/TextField"
 import axios from "axios"
 import Cookies from "js-cookie"
 import DispatchContext from "./DispatchContext.js"
+import StateContext from "./StateContext.js"
 import Modal from "@mui/material/Modal"
+import Select from "react-select"
+import Checkgroup from "./Checkgroup"
 
 const defaultTheme = createTheme()
 
@@ -32,9 +35,41 @@ export default function Board({ route, navigation }) {
     Task_name: "",
     Task_description: ""
   })
+  const [plansOptions, setPlansOptions] = useState([])
   const [openedByArrow, setOpenedByArrow] = useState(false)
+  const [arrowDirection, setArrowDirection] = useState("none")
   const location = useLocation()
+  const navigate = useNavigate()
   const appDispatch = React.useContext(DispatchContext)
+  const appState = React.useContext(StateContext)
+
+  //Permission states
+  const [isUserPL, setIsUserPL] = useState(false)
+  const [isUserPM, setIsUserPM] = useState(false)
+  const [permitCreate, setPermitCreate] = useState(false)
+  const [permitOpen, setPermitOpen] = useState(false)
+  const [permitToDo, setPermitToDo] = useState(false)
+  const [permitDoing, setPermitDoing] = useState(false)
+  const [permitDone, setPermitDone] = useState(false)
+
+  useEffect(() => {
+    const checkUserGroup = async () => {
+      const isPL = await Checkgroup.Checkgroup("PL")
+      const isPM = await Checkgroup.Checkgroup("PM")
+      setPermitCreate(await Checkgroup.Checkgroup(location.state.application.App_permit_create))
+      //console.log(location.state.application)
+      setPermitOpen(await Checkgroup.Checkgroup(location.state.application.App_permit_Open))
+      setPermitToDo(await Checkgroup.Checkgroup(location.state.application.App_permit_toDoList))
+      setPermitDoing(await Checkgroup.Checkgroup(location.state.application.App_permit_Doing))
+      setPermitDone(await Checkgroup.Checkgroup(location.state.application.App_permit_Done))
+      setIsUserPL(isPL)
+      setIsUserPM(isPM)
+    }
+
+    if (appState.isLogged) {
+      checkUserGroup()
+    }
+  }, [location, appState.isLogged])
 
   const fetchData = async () => {
     try {
@@ -49,7 +84,26 @@ export default function Board({ route, navigation }) {
       }
     } catch (err) {
       if (err.response) {
-        appDispatch({ type: "messages", payload: { message: err.response.data.errMessage, type: "error" } })
+        appDispatch({ type: "messages", payload: { message: err.response.data.errMessage, type: "info" } })
+      } else {
+        appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
+      }
+    }
+  }
+
+  const fetchPlans = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/controller/getPlanByApp/${location.state.application.App_Acronym}`, {
+        headers: {
+          Authorization: "Bearer " + Cookies.get("token")
+        }
+      })
+      const options = response.data.data.map(plan => ({ value: plan.Plan_MVP_name, label: plan.Plan_MVP_name }))
+      setPlansOptions(options)
+    } catch (error) {
+      if (error.response) {
+        //appDispatch({ type: "messages", payload: { message: error.response.data.errMessage, type: "error" } })
+        //This returns no plans found, but it's not an error
       } else {
         appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
       }
@@ -68,13 +122,11 @@ export default function Board({ route, navigation }) {
 
     data.forEach(task => {
       const state = task.Task_state
-      if (taskStates[state]) {
-        taskStates[state].push({
-          id: task.Task_id,
-          name: task.Task_name,
-          Plan_color: task.Plan_color
-        })
-      }
+      taskStates[state].push({
+        id: task.Task_id,
+        name: task.Task_name,
+        Plan_color: task.Plan_color
+      })
     })
 
     return taskStates
@@ -82,11 +134,8 @@ export default function Board({ route, navigation }) {
 
   useEffect(() => {
     fetchData()
-  }, [])
-
-  useEffect(() => {
-    console.log(tasks)
-  }, [tasks])
+    fetchPlans()
+  }, [location.state.application.App_Acronym])
 
   const handleOpenCreateTaskModal = () => setOpenCreateTaskModal(true)
   const handleCloseCreateTaskModal = () => setOpenCreateTaskModal(false)
@@ -104,49 +153,36 @@ export default function Board({ route, navigation }) {
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    width: "70%", // Adjust the width as per your requirement
-    height: "80%", // Adjust the height as needed
+    width: "95%",
+    height: "95%",
+    maxHeight: "90vh", // Limit the maximum height
     bgcolor: "background.paper",
     boxShadow: 24,
     p: 4,
     outline: "none",
-    overflowY: "auto" // Add scroll if content is too long
+    overflowY: "auto"
   }
 
   const canDemoteTask = status => {
     return status === "Doing" || status === "Done"
   }
 
-  const handleMoveTask = async (event, task, nextState) => {
+  const handleMoveTask = async (event, task, nextState, direction) => {
     event.stopPropagation()
-    setSelectedTask({ ...task, nextState }) // Include the nextState for promoting/demoting
-    setOpenedByArrow(true) // Set to true when opened by arrow click
-    setOpenTaskDetailsModal(true)
-
-    // let endpoint = ""
-    // if (currentState === "Done" && nextState === "Doing") {
-    //   endpoint = "rejectTask"
-    // } else if (currentState === "Doing" && nextState === "ToDo") {
-    //   endpoint = "returnTask"
-    // } else {
-    //   endpoint = "promoteTask" // or another endpoint for promoting tasks
-    // }
-
-    // try {
-    //   const res = await axios.put(
-    //     `http://localhost:8080/controller/${endpoint}/${taskId}`,
-    //     {}, // Add any required body data
-    //     { headers: { Authorization: "Bearer " + Cookies.get("token") } }
-    //   )
-    //   console.log(res.data)
-    //   fetchData() // Refetch data to reflect changes
-    // } catch (err) {
-    //   if (err.response) {
-    //     appDispatch({ type: "messages", payload: { message: err.response.data.errMessage, type: "error" } })
-    //   } else {
-    //     appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
-    //   }
-    // }
+    // Fetch the task details again if necessary
+    try {
+      const res = await axios.get(`http://localhost:8080/controller/getTask/${task.id}`, {
+        headers: {
+          Authorization: "Bearer " + Cookies.get("token")
+        }
+      })
+      setSelectedTask({ ...res.data.data, nextState })
+      setOpenedByArrow(true)
+      setArrowDirection(direction) // Set the direction of the arrow clicked
+      setOpenTaskDetailsModal(true)
+    } catch (err) {
+      // handle error
+    }
   }
 
   const handleCreateTask = async () => {
@@ -178,7 +214,7 @@ export default function Board({ route, navigation }) {
 
     fetchData() // Refetch the data to update the board
 
-    handleCloseModal() // Close the modal after task creation
+    handleCloseCreateTaskModal()
   }
 
   const handleTaskClick = async taskId => {
@@ -202,28 +238,151 @@ export default function Board({ route, navigation }) {
 
   const TaskDetailsModal = () => {
     const [isEditMode, setIsEditMode] = useState(false)
+    const [initialNotes, setInitialNotes] = useState("") // Add this state to store the initial notes
     const [updatedNotes, setUpdatedNotes] = useState("")
+    const [initialPlan, setInitialPlan] = useState(null)
+    const [selectedPlan, setSelectedPlan] = useState(null)
 
     useEffect(() => {
       if (selectedTask) {
-        setUpdatedNotes(selectedTask.Task_notes || "")
+        const currentNotes = selectedTask.Task_notes || ""
+        setUpdatedNotes(currentNotes)
+        setInitialNotes(currentNotes)
+        const currentPlan = selectedTask.Task_plan ? { value: selectedTask.Task_plan, label: selectedTask.Task_plan } : null
+        setSelectedPlan(currentPlan)
+        setInitialPlan(currentPlan) // Store the initial plan when a task is selected
       }
     }, [selectedTask])
 
+    const handlePlanChange = selectedOption => {
+      setSelectedPlan(selectedOption)
+    }
+
+    const renderActionButton = () => {
+      if (arrowDirection === "left") {
+        return (
+          <Button onClick={handlePromoteDemote} color="secondary" style={{ marginRight: "8px", marginTop: "16px" }}>
+            Demote
+          </Button>
+        )
+      } else if (arrowDirection === "right") {
+        return (
+          <Button onClick={handlePromoteDemote} color="secondary" style={{ marginRight: "8px", marginTop: "16px" }}>
+            Promote
+          </Button>
+        )
+      }
+      return null
+    }
+
     const handleEditSave = async () => {
       if (isEditMode) {
-        // Implement save functionality here
-        // For example, send the updated notes to the server
-        // await axios.put(`your-api-endpoint/${selectedTask.Task_id}`, { updatedNotes }, { ...headers });
-        console.log("Saved Notes:", updatedNotes)
+        // Save the changes
+        try {
+          let res, res2
+          // Prepare the data for saving including the plan if it's editable
+          if (updatedNotes !== initialNotes) {
+            res = await axios.put(
+              `http://localhost:8080/controller/updateNotes/${selectedTask.Task_id}`,
+              {
+                Task_notes: updatedNotes
+              },
+              {
+                headers: {
+                  Authorization: "Bearer " + Cookies.get("token")
+                }
+              }
+            )
+          }
+
+          if (selectedTask.Task_state === "Open" && selectedPlan?.value !== initialPlan?.value) {
+            res2 = await axios.put(
+              `http://localhost:8080/controller/assignTaskToPlan/${selectedTask.Task_id}`,
+              {
+                Plan_MVP_name: selectedPlan?.value || null,
+                Plan_app_Acronym: location.state.application.App_Acronym
+              },
+              {
+                headers: {
+                  Authorization: "Bearer " + Cookies.get("token")
+                }
+              }
+            )
+          }
+
+          if (res) {
+            appDispatch({ type: "messages", payload: { message: res.data.message, type: "success" } })
+          }
+          if (res2 && !res) {
+            appDispatch({ type: "messages", payload: { message: res2.data.message, type: "success" } })
+          }
+          //appDispatch({ type: "messages", payload: { message: res.data.message, type: "success" } })
+          fetchData() // Refresh data
+          //Close the modal
+          setOpenTaskDetailsModal(false)
+        } catch (err) {
+          if (err.response) {
+            appDispatch({ type: "messages", payload: { message: err.response.data.errMessage, type: "error" } })
+          } else {
+            console.log(err)
+            //appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
+          }
+        }
+        setIsEditMode(!isEditMode)
+      } else {
+        setIsEditMode(true) // Enter edit mode
       }
-      setIsEditMode(!isEditMode)
     }
 
     const handlePromoteDemote = async () => {
-      if (selectedTask && selectedTask.nextState) {
-        console.log("Promoting/Demoting to:", selectedTask.nextState)
-        // Add logic to promote/demote task
+      if (!selectedTask || !selectedTask.nextState) {
+        console.error("Selected task or nextState is not defined.")
+        return
+      }
+
+      let url
+      switch (arrowDirection) {
+        case "right": // Promote
+          url = `http://localhost:8080/controller/promoteTask/${selectedTask.Task_id}`
+          break
+        case "left": // Demote
+          if (selectedTask.Task_state === "Done") {
+            url = `http://localhost:8080/controller/rejectTask/${selectedTask.Task_id}`
+          } else if (selectedTask.Task_state === "Doing") {
+            url = `http://localhost:8080/controller/returnTask/${selectedTask.Task_id}`
+          }
+          break
+        default:
+          console.error("Invalid arrow direction for task movement.")
+          return
+      }
+
+      if (!url) {
+        console.error("No URL defined for task movement.")
+        return
+      }
+
+      //if demoting, we want to check if the project lead reassigned a new task plan
+
+      try {
+        const res = await axios.put(
+          url,
+          { Task_notes: updatedNotes, Task_plan: selectedPlan?.value || null },
+          {
+            headers: {
+              Authorization: "Bearer " + Cookies.get("token")
+            }
+          }
+        )
+        appDispatch({ type: "messages", payload: { message: res.data.message, type: "success" } })
+        fetchData() // Refresh data
+        setOpenTaskDetailsModal(false)
+      } catch (err) {
+        if (err.response) {
+          appDispatch({ type: "messages", payload: { message: err.response.data.errMessage, type: "error" } })
+        } else {
+          appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
+        }
       }
     }
 
@@ -256,7 +415,9 @@ export default function Board({ route, navigation }) {
               <Typography variant="subtitle1" style={{ fontWeight: "bold", marginTop: "16px" }}>
                 Task Plan
               </Typography>
-              <Typography>{selectedTask?.Task_plan || "N/A"}</Typography>
+              {(isEditMode && selectedTask?.Task_state === "Open" && permitOpen && <Select options={plansOptions} onChange={handlePlanChange} />) ||
+                // If demoting and task is in Done state, allow for selecting a plan
+                (openedByArrow && arrowDirection === "left" && selectedTask?.Task_state === "Done" && <Select options={plansOptions} onChange={handlePlanChange} />) || <Typography>{selectedTask?.Task_plan || "N/A"}</Typography>}
 
               <Typography variant="subtitle1" style={{ fontWeight: "bold", marginTop: "16px" }}>
                 Task Owner
@@ -271,25 +432,63 @@ export default function Board({ route, navigation }) {
               <Typography variant="subtitle1" style={{ fontWeight: "bold", marginTop: "16px" }}>
                 Created
               </Typography>
-              <Typography>{selectedTask?.Task_createDate || "N/A"}</Typography>
+              <Typography>{selectedTask?.Task_createDate.split("T")[0] || "N/A"}</Typography>
             </Grid>
             <Grid item xs={8} style={{ display: "flex", flexDirection: "column" }}>
               {/* Right side: Description and Notes */}
               <Typography variant="subtitle1" style={{ fontWeight: "bold" }}>
                 Description
               </Typography>
-              <Typography>{selectedTask?.Task_description || "No description provided."}</Typography>
+              <TextField
+                variant="outlined"
+                multiline
+                disabled={true}
+                style={{
+                  maxHeight: "200px",
+                  overflowY: "auto"
+                }}
+                fullWidth
+                value={selectedTask?.Task_description || "No description provided."}
+              />
 
               <Typography variant="subtitle1" style={{ fontWeight: "bold", marginTop: "16px" }}>
                 Notes
               </Typography>
-              <Typography>{selectedTask?.Task_notes || "No notes added."}</Typography>
-
-              {/* Additional notes field */}
-              <TextField label="Notes" multiline rows={4} fullWidth margin="normal" onChange={e => setUpdatedNotes(e.target.value)} disabled={!isEditMode} />
+              <TextField
+                variant="outlined"
+                multiline
+                InputProps={{
+                  readOnly: true
+                }}
+                style={{
+                  overflowY: "auto"
+                }}
+                fullWidth
+                rows={10}
+                value={selectedTask?.Task_notes || "No notes added."}
+              />
+              <TextField
+                label="Notes"
+                multiline
+                rows={4}
+                fullWidth
+                margin="normal"
+                onChange={e => setUpdatedNotes(e.target.value)}
+                disabled={
+                  // !isEditMode || opened by arrow
+                  !isEditMode && !openedByArrow
+                }
+              />
             </Grid>
             <Box display="flex" justifyContent="space-between" alignItems="center" mt={2} style={{ width: "100%" }}>
-              <Button onClick={() => setSelectedTask(null)} color="primary" style={{ marginTop: "16px" }}>
+              <Button
+                onClick={() => {
+                  setOpenTaskDetailsModal(false)
+                  setOpenedByArrow(false)
+                }}
+                color="primary"
+                style={{ marginTop: "16px" }}
+              >
                 Close
               </Button>
               <Box>
@@ -298,17 +497,52 @@ export default function Board({ route, navigation }) {
                     {isEditMode ? "Save" : "Edit"}
                   </Button>
                 )}
-                {selectedTask && selectedTask.nextState && (
-                  <Button onClick={handlePromoteDemote} color="secondary" style={{ marginRight: "8px", marginTop: "16px" }}>
-                    Promote/Demote
-                  </Button>
-                )}
+                {selectedTask && selectedTask.nextState && renderActionButton()}
               </Box>
             </Box>
           </Grid>
         </Box>
       </Modal>
     )
+  }
+
+  const renderArrowBack = (status, task, index) => {
+    if (canDemoteTask(status) && checkPermitForLane(status)) {
+      return (
+        <IconButton onClick={event => handleMoveTask(event, task, Object.keys(tasks)[index - 1], "left")}>
+          <ArrowBackIcon />
+        </IconButton>
+      )
+    }
+    return null
+  }
+
+  const checkPermitForLane = lane => {
+    switch (lane) {
+      case "Open":
+        return permitOpen
+      case "ToDo":
+        return permitToDo
+      case "Doing":
+        return permitDoing
+      case "Done":
+        return permitDone
+      case "Close":
+        return permitClose
+      default:
+        return false
+    }
+  }
+
+  const renderArrowForward = (status, task, index, arrayLength) => {
+    if (index < arrayLength - 1 && checkPermitForLane(status)) {
+      return (
+        <IconButton onClick={event => handleMoveTask(event, task, Object.keys(tasks)[index + 1], "right")}>
+          <ArrowForwardIcon />
+        </IconButton>
+      )
+    }
+    return null
   }
 
   return (
@@ -319,15 +553,28 @@ export default function Board({ route, navigation }) {
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} mt={2}>
           {/* Buttons Container */}
           <Box>
-            <Button variant="contained" color="primary" style={{ marginRight: 8 }}>
-              Manage Plans
-            </Button>
-            <Button variant="contained" color="primary" onClick={handleOpenCreateTaskModal}>
-              Create Task
-            </Button>
+            {isUserPM && (
+              <Button
+                variant="contained"
+                color="primary"
+                style={{ marginRight: 8 }}
+                onClick={() => {
+                  navigate("/PlanManagement", { state: { application: location.state.application } })
+                }}
+              >
+                Manage Plans
+              </Button>
+            )}
+            {permitCreate && (
+              <Button variant="contained" color="primary" onClick={handleOpenCreateTaskModal}>
+                Create Task
+              </Button>
+            )}
           </Box>
           {/* Typography aligned with the buttons */}
-          <Typography variant="h4">Kanban Board</Typography>
+          <Typography variant="h4" sx={{ margin: "0 auto" }}>
+            Kanban Board
+          </Typography>
         </Box>
         <Modal open={openCreateTaskModal} onClose={handleCloseCreateTaskModal}>
           <Box sx={modalStyle}>
@@ -380,16 +627,12 @@ export default function Board({ route, navigation }) {
                         padding: "8px",
                         marginBottom: "8px",
                         wordWrap: "break-word",
-                        borderLeft: `6px solid ${task.Plan_color}`,
+                        borderTop: `6px solid ${task.Plan_color}`,
                         backgroundColor: "#fff"
                       }}
                       onClick={() => handleTaskClick(task.id)}
                     >
-                      {canDemoteTask(status) && (
-                        <IconButton onClick={event => handleMoveTask(event, task, array[index - 1])}>
-                          <ArrowBackIcon />
-                        </IconButton>
-                      )}
+                      {renderArrowBack(status, task, index, array.length)}
                       {/* Task Name and ID */}
                       <Box
                         style={{
@@ -405,11 +648,7 @@ export default function Board({ route, navigation }) {
                           {task.id}
                         </Typography>
                       </Box>
-                      {index < array.length - 1 && (
-                        <IconButton onClick={event => handleMoveTask(event, task, array[index - 1])}>
-                          <ArrowForwardIcon />
-                        </IconButton>
-                      )}
+                      {renderArrowForward(status, task, index, array.length)}
                     </Paper>
                   ))
                 ) : (

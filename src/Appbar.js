@@ -6,7 +6,7 @@ import Typography from "@mui/material/Typography"
 import { useState, useEffect } from "react"
 import axios from "axios"
 import Cookies from "js-cookie"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import DispatchContext from "./DispatchContext"
 import StateContext from "./StateContext"
 import Checkgroup from "./Checkgroup"
@@ -15,6 +15,7 @@ export default function Appbar(props) {
   const appDispatch = React.useContext(DispatchContext)
   const appState = React.useContext(StateContext)
   const navigate = useNavigate()
+  const location = useLocation()
   const config = {
     headers: {
       Authorization: "Bearer " + Cookies.get("token")
@@ -23,7 +24,7 @@ export default function Appbar(props) {
 
   useEffect(() => {
     checkAdmin()
-  })
+  }, [location])
 
   const checkAdmin = () => {
     Checkgroup.Checkgroup("admin").then(res => {
@@ -53,13 +54,12 @@ export default function Appbar(props) {
 
   //logout
   const logOut = () => {
-    try{
+    try {
       axios.get("http://localhost:8080/controller/_logout", config)
-    }
-    catch(e){
+    } catch (e) {
       console.log(e)
     }
-    
+
     Cookies.remove("token")
     appDispatch({ type: "isLogged", payload: false })
     navigate("/")

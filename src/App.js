@@ -4,20 +4,21 @@ import Board from "./Board.js"
 import { Routes, Route, BrowserRouter } from "react-router-dom"
 import AdminHome from "./AdminHome.js"
 import MyAccount from "./MyAccount.js"
-import { useReducer } from "react"
+import { useEffect, useReducer } from "react"
 import DispatchContext from "./DispatchContext.js"
 import Appbar from "./Appbar.js"
 import StateContext from "./StateContext.js"
 import React from "react"
 import Toast from "./Toast.js"
 import CheckLogin from "./CheckLogin.js"
+import PlanManagement from "./PlanManagement.js"
 
 function App() {
-  const initialState = {
+  const initialState = () => ({
     messages: [],
     isLogged: null,
-    isAdmin: null
-  }
+    isAdmin: null,
+  })
 
   //Using a reducer, manage the navigation of any error response depending on the status code
   function reducer(state, action) {
@@ -25,25 +26,14 @@ function App() {
       case "messages":
         return { ...state, messages: [...state.messages, action.payload] }
       case "isLogged":
-        //modify the state only if the value is different from the previous one
-        if (state.isLogged !== action.payload) {
-          return { ...state, isLogged: action.payload }
-        } else {
-          return state
-        }
       case "isAdmin":
-        //modify the state only if the value is different from the previous one
-        if (state.isAdmin !== action.payload) {
-          return { ...state, isAdmin: action.payload }
-        } else {
-          return state
-        }
+        return state[action.type] !== action.payload ? { ...state, [action.type]: action.payload } : state
       default:
         console.log(action)
     }
   }
 
-  const [state, dispatch] = useReducer(reducer, initialState)
+  const [state, dispatch] = useReducer(reducer, initialState())
 
   return (
     <StateContext.Provider value={state}>
@@ -82,6 +72,14 @@ function App() {
               element={
                 <CheckLogin>
                   <Board />
+                </CheckLogin>
+              }
+            />
+            <Route
+              path="/PlanManagement"
+              element={
+                <CheckLogin>
+                  <PlanManagement />
                 </CheckLogin>
               }
             />
