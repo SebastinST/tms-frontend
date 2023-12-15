@@ -148,15 +148,15 @@ function AddApp(props) {
                         <TableCell align="center" style={{ width: "5%" }}>
                             <TextField name="App_Rnumber" required size="small" label="Rnum" value={inputs.App_Rnumber || ""} onChange={handleChange}/>
                         </TableCell>
-                        <TableCell style={{ width: "25%" }}>
-                            <TextField name="App_Description" required size="small" label="App Description" value={inputs.App_Description || ""} onChange={handleChange}/>
+                        <TableCell align="center" style={{ width: "25%" }}>
+                            <TextField name="App_Description" required size="small" label="App Description" value={inputs.App_Description || ""} onChange={handleChange} multiline rows={2}/>
                         </TableCell>
                         <TableCell align="center" style={{ width: "8%" }}>
                             <Select
                                 name="App_permit_create"
                                 options={groupOptions}
                                 className="basic-select"
-                                onChange={event => handleChange({target:{name :"App_permit_create", value : event.value}})}
+                                onChange={event => handleChange({target:{name :"App_permit_create", value : event ? event.value : ""}})}
                                 value={{
                                     value : inputs.App_permit_create,
                                     label : inputs.App_permit_create
@@ -165,6 +165,7 @@ function AddApp(props) {
                                 classNames="group-select"
                                 menuPortalTarget={document.body} 
                                 styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                                isClearable
                                 />
                         </TableCell>
                         <TableCell align="center" style={{ width: "8%" }}>
@@ -172,7 +173,7 @@ function AddApp(props) {
                                 name="App_permit_Open"
                                 options={groupOptions}
                                 className="basic-select"
-                                onChange={event => handleChange({target:{name :"App_permit_Open", value : event.value}})}
+                                onChange={event => handleChange({target:{name :"App_permit_Open", value : event ? event.value : ""}})}
                                 value={{
                                     value : inputs.App_permit_Open,
                                     label : inputs.App_permit_Open
@@ -181,6 +182,7 @@ function AddApp(props) {
                                 classNames="group-select"
                                 menuPortalTarget={document.body} 
                                 styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                                isClearable
                                 />
                         </TableCell>
                         <TableCell align="center" style={{ width: "8%" }}>
@@ -188,7 +190,7 @@ function AddApp(props) {
                                 name="App_permit_toDoList"
                                 options={groupOptions}
                                 className="basic-select"
-                                onChange={event => handleChange({target:{name :"App_permit_toDoList", value : event.value}})}
+                                onChange={event => handleChange({target:{name :"App_permit_toDoList", value : event ? event.value : ""}})}
                                 value={{
                                     value : inputs.App_permit_toDoList,
                                     label : inputs.App_permit_toDoList
@@ -197,6 +199,7 @@ function AddApp(props) {
                                 classNames="group-select"
                                 menuPortalTarget={document.body} 
                                 styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                                isClearable
                                 />
                         </TableCell>
                         <TableCell align="center" style={{ width: "8%" }}>
@@ -204,7 +207,7 @@ function AddApp(props) {
                                 name="App_permit_Doing"
                                 options={groupOptions}
                                 className="basic-select"
-                                onChange={event => handleChange({target:{name :"App_permit_Doing", value : event.value}})}
+                                onChange={event => handleChange({target:{name :"App_permit_Doing", value : event ? event.value : ""}})}
                                 value={{
                                     value : inputs.App_permit_Doing,
                                     label : inputs.App_permit_Doing
@@ -213,6 +216,7 @@ function AddApp(props) {
                                 classNames="group-select"
                                 menuPortalTarget={document.body} 
                                 styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                                isClearable
                                 />
                         </TableCell>
                         <TableCell align="center" style={{ width: "8%" }}>
@@ -220,7 +224,7 @@ function AddApp(props) {
                                 name="App_permit_Done"
                                 options={groupOptions}
                                 className="basic-select"
-                                onChange={event => handleChange({target:{name :"App_permit_Done", value : event.value}})}
+                                onChange={event => handleChange({target:{name :"App_permit_Done", value : event ? event.value : ""}})}
                                 value={{
                                     value : inputs.App_permit_Done,
                                     label : inputs.App_permit_Done
@@ -229,6 +233,7 @@ function AddApp(props) {
                                 classNames="group-select"
                                 menuPortalTarget={document.body} 
                                 styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                                isClearable
                                 />
                         </TableCell>
                         <TableCell align="center" style={{ width: "10%" }}>
