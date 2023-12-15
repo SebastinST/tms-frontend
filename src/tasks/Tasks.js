@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import Checkgroup from '../components/Checkgroup';
 import TaskCreationModal from './TaskCreationModal';
 import TaskDetailModal from './TaskDetailModal';
+import TaskActionModal from './TaskActionModal';
 
 // External
 import Button from "@mui/material/Button";
@@ -39,8 +40,10 @@ function Tasks() {
     
     // State variables for modals
     const [isTaskCreationModalOpen, setIsTaskCreationModalOpen] = useState(false);
-    const [isTaskDetailModalOpen, setIsTaskDetailModalOpen] = useState(false);
     const [currentTaskId, setCurrentTaskId] = useState("");
+    const [isTaskDetailModalOpen, setIsTaskDetailModalOpen] = useState(false);
+    const [isTaskActionModalOpen, setIsTaskActionModalOpen] = useState(false);
+    const [isPromoting, setIsPromoting] = useState(true);
     
     useEffect(() => {
         // Check if app is valid, if not push to main page
@@ -148,8 +151,10 @@ function Tasks() {
         setIsTaskDetailModalOpen(true);
     }
     
-    const openTaskMoveModal = (move, Task_id) => {
-        alert(move + " " + Task_id);
+    const openTaskActionModal = (isPromoting, Task_id) => {
+        setCurrentTaskId(Task_id);
+        setIsPromoting(isPromoting);
+        setIsTaskActionModalOpen(true);
     }
 
     const taskLists = Object.keys(tasks).map((state, index, array) => (
@@ -171,7 +176,7 @@ function Tasks() {
                         backgroundColor: "#fff",
                     }}>
                         {(state === "Done" || state === "Doing") && 
-                            <IconButton onClick={() => openTaskMoveModal("demote",task.Task_id)}>
+                            <IconButton onClick={() => openTaskActionModal(false,task.Task_id)}>
                                 <ArrowBackIcon />
                             </IconButton>
                         }
@@ -190,7 +195,7 @@ function Tasks() {
                             </Typography>
                         </Box>
                         {(state != "Close") &&
-                            <IconButton onClick={() => openTaskMoveModal("promote",task.Task_id)}>
+                            <IconButton onClick={() => openTaskActionModal(true,task.Task_id)}>
                                 <ArrowForwardIcon />
                             </IconButton>
                         }
@@ -238,6 +243,14 @@ function Tasks() {
             app={app}
             isTaskDetailModalOpen={isTaskDetailModalOpen}
             setIsTaskDetailModalOpen={setIsTaskDetailModalOpen}
+            setRefreshTasks={setRefreshTasks}
+        />
+        <TaskActionModal
+            currentTaskId={currentTaskId}
+            isPromoting={isPromoting}
+            app={app}
+            isTaskActionModalOpen={isTaskActionModalOpen}
+            setIsTaskActionModalOpen={setIsTaskActionModalOpen}
             setRefreshTasks={setRefreshTasks}
         />
         </>
