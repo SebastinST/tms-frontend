@@ -237,7 +237,7 @@ function EditApp(props) {
                                 name="App_permit_create"
                                 options={groupOptions}
                                 className="basic-select"
-                                onChange={event => handleChange({target:{name :"App_permit_create", value : event.value}})}
+                                onChange={event => handleChange({target:{name :"App_permit_create", value : event ? event.value : ""}})}
                                 value={{
                                     value : inputs.App_permit_create,
                                     label : inputs.App_permit_create
@@ -246,6 +246,7 @@ function EditApp(props) {
                                 classNames="group-select"
                                 menuPortalTarget={document.body} 
                                 styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                                isClearable
                                 />
                             : app.App_permit_create
                                 ? <button className="group-button">{app.App_permit_create}</button>
@@ -258,7 +259,7 @@ function EditApp(props) {
                                 name="App_permit_Open"
                                 options={groupOptions}
                                 className="basic-select"
-                                onChange={event => handleChange({target:{name :"App_permit_Open", value : event.value}})}
+                                onChange={event => handleChange({target:{name :"App_permit_Open", value : event ? event.value : ""}})}
                                 value={{
                                     value : inputs.App_permit_Open,
                                     label : inputs.App_permit_Open
@@ -267,6 +268,7 @@ function EditApp(props) {
                                 classNames="group-select"
                                 menuPortalTarget={document.body} 
                                 styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                                isClearable
                                 />
                             : app.App_permit_Open
                                 ? <button className="group-button">{app.App_permit_Open}</button>
@@ -279,7 +281,7 @@ function EditApp(props) {
                                 name="App_permit_toDoList"
                                 options={groupOptions}
                                 className="basic-select"
-                                onChange={event => handleChange({target:{name :"App_permit_toDoList", value : event.value}})}
+                                onChange={event => handleChange({target:{name :"App_permit_toDoList", value : event ? event.value : ""}})}
                                 value={{
                                     value : inputs.App_permit_toDoList,
                                     label : inputs.App_permit_toDoList
@@ -288,6 +290,7 @@ function EditApp(props) {
                                 classNames="group-select"
                                 menuPortalTarget={document.body} 
                                 styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                                isClearable
                                 />
                             : app.App_permit_toDoList
                                 ? <button className="group-button">{app.App_permit_toDoList}</button>
@@ -300,7 +303,7 @@ function EditApp(props) {
                                 name="App_permit_Doing"
                                 options={groupOptions}
                                 className="basic-select"
-                                onChange={event => handleChange({target:{name :"App_permit_Doing", value : event.value}})}
+                                onChange={event => handleChange({target:{name :"App_permit_Doing", value : event ? event.value : ""}})}
                                 value={{
                                     value : inputs.App_permit_Doing,
                                     label : inputs.App_permit_Doing
@@ -309,6 +312,7 @@ function EditApp(props) {
                                 classNames="group-select"
                                 menuPortalTarget={document.body} 
                                 styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                                isClearable
                                 />
                             : app.App_permit_create
                                 ? <button className="group-button">{app.App_permit_Doing}</button>
@@ -321,7 +325,7 @@ function EditApp(props) {
                                 name="App_permit_Done"
                                 options={groupOptions}
                                 className="basic-select"
-                                onChange={event => handleChange({target:{name :"App_permit_Done", value : event.value}})}
+                                onChange={event => handleChange({target:{name :"App_permit_Done", value : event ? event.value : ""}})}
                                 value={{
                                     value : inputs.App_permit_Done,
                                     label : inputs.App_permit_Done
@@ -330,6 +334,7 @@ function EditApp(props) {
                                 classNames="group-select"
                                 menuPortalTarget={document.body} 
                                 styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                                isClearable
                                 />
                             : app.App_permit_Done
                                 ? <button className="group-button">{app.App_permit_Done}</button>
