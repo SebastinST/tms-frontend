@@ -34,8 +34,9 @@ function Tasks() {
         Close: []
     });
 
-    // Get app details from previous link here
-    const app = useLocation().state;
+    // State variable for app details
+    // Default value is application object given from 'app list' or 'manage plans' pages
+    const [app, setApp] = useState(useLocation().state);
     
     // State variables for modals
     const [isTaskCreationModalOpen, setIsTaskCreationModalOpen] = useState(false);
@@ -50,16 +51,48 @@ function Tasks() {
     const [permitToDo, setPermitToDo] = useState(false);
     const [permitDoing, setPermitDoing] = useState(false);
     const [permitDone, setPermitDone] = useState(false);
+    
+    // Get app details on render for permits
+    useEffect(() => {
+        async function getAppById() {
+            try {
+                let result = await Axios.get(`http://localhost:8000/getAppById/${app.App_Acronym}`,{
+                    headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}` }
+                }).catch(()=>{});
+                
+                // Check if app is valid, if not push to main page
+                if (result.data) {
+                    setApp(result.data.data)
+                } else {
+                    toast.error("Error: No application selected", {
+                        autoClose: false,
+                    });
+                    navigate("/main");
+                }
+            } catch (e) {
+                try {
+                    if (e.response.status === 401) {
+                        Cookies.remove('jwt-token');
+                        navigate("/");
+                    }
+                    let error = e.response.data
+                    if (error) {
+                        // Show error message
+                        toast.error(error.message, {
+                            autoClose: false,
+                        });
+                    }
+                } catch (e) {
+                    toast.error(e, {
+                        autoClose: false,
+                    });
+                }
+            }
+        }
+        getAppById();
+    },[])
 
     useEffect(() => {
-        // Check if app is valid, if not push to main page
-        if (!app) {
-            toast.error("Error: No application selected", {
-                autoClose: false,
-            });
-            navigate("/main");
-        }
-
         function checkPermitResult(result) {
             if (result.response && result.response.status == 401) {
                 Cookies.remove('jwt-token');
