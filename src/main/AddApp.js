@@ -146,7 +146,7 @@ function AddApp(props) {
                             <TextField name="End" size="small" label="End" value={inputs.App_endDate || ""} onChange={handleChange}/>
                         </TableCell>
                         <TableCell align="center" style={{ width: "5%" }}>
-                            <TextField name="App_Rnumber" required size="small" label="Rnum" value={inputs.App_Rnumber || ""} onChange={handleChange}/>
+                            <TextField name="App_Rnumber" required size="small" label="Rnum" value={inputs.App_Rnumber || ""} onChange={handleChange} type="number" />
                         </TableCell>
                         <TableCell align="center" style={{ width: "25%" }}>
                             <TextField name="App_Description" required size="small" label="App Description" value={inputs.App_Description || ""} onChange={handleChange} multiline rows={2}/>
