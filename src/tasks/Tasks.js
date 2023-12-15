@@ -25,7 +25,6 @@ function Tasks() {
     const navigate = useNavigate();
     const token = Cookies.get("jwt-token");
     const [isPM, setIsPM] = useState(false);
-    const [isPL, setIsPL] = useState(false);
     const [refreshTasks, setRefreshTasks] = useState(false);
     const [tasks, setTasks] = useState({
         Open: [],
@@ -45,6 +44,13 @@ function Tasks() {
     const [isTaskActionModalOpen, setIsTaskActionModalOpen] = useState(false);
     const [isPromoting, setIsPromoting] = useState(true);
     
+    // States variables for permits
+    const [permitCreate, setPermitCreate] = useState(false);
+    const [permitOpen, setPermitOpen] = useState(false);
+    const [permitToDo, setPermitToDo] = useState(false);
+    const [permitDoing, setPermitDoing] = useState(false);
+    const [permitDone, setPermitDone] = useState(false);
+
     useEffect(() => {
         // Check if app is valid, if not push to main page
         if (!app) {
@@ -54,45 +60,28 @@ function Tasks() {
             navigate("/main");
         }
 
-        // Check if current user is Project Manager to show 'manage plans' button
-        async function checkPM() {
-            try {
-                await Checkgroup("pm").then(function(result){
-                    if (result.response && result.response.status == 401) {
-                        Cookies.remove('jwt-token');
-                        navigate("/");
-                    }
-                    if (result === true) {
-                        setIsPM(true);
-                    }
-                })
-            } catch (e) {
-                setIsPM(false);
-            }   
-        }
-        
-        // Check if current user is Project Lead to show create task button
-        async function checkPL() {
-            try {
-                await Checkgroup("pl").then(function(result){
-                    if (result.response && result.response.status == 401) {
-                        Cookies.remove('jwt-token');
-                        navigate("/");
-                    }
-                    if (result === true) {
-                        setIsPL(true);
-                    }
-                })
-            } catch (e) {
-                setIsPL(false);
-            }   
-        }
-        
-        checkPM();
-        checkPL();
-        setRefreshTasks(false);
+        function checkPermitResult(result) {
+            if (result.response && result.response.status == 401) {
+                Cookies.remove('jwt-token');
+                navigate("/");
+            }
+            if (result === true) {
+                return true;
+            } else {
+                return false;
+            }
+        } 
 
-    }, [token, app])
+        const checkPermits = async () => {
+            setIsPM(await Checkgroup("pm").then(checkPermitResult));
+            setPermitCreate(await Checkgroup(app.App_permit_create).then(checkPermitResult))
+            setPermitOpen(await Checkgroup(app.App_permit_Open).then(checkPermitResult))
+            setPermitToDo(await Checkgroup(app.App_permit_toDoList).then(checkPermitResult))
+            setPermitDoing(await Checkgroup(app.App_permit_Doing).then(checkPermitResult))
+            setPermitDone(await Checkgroup(app.App_permit_Done).then(checkPermitResult))
+        }
+        checkPermits();
+    }, [token, app, refreshTasks])
 
     // getTasksByApp to display tasks details and refresh when changed, show latest on top
     useEffect(() => {
@@ -146,17 +135,60 @@ function Tasks() {
         setRefreshTasks(false);
     }, [refreshTasks]);
 
+    // Handling opening of task detail modal with corresponding task id
     const openTaskDetailModal = (Task_id) => {
         setCurrentTaskId(Task_id);
         setIsTaskDetailModalOpen(true);
     }
     
+    // Handling opening of task detail modal with corresponding task id and whether promoting or not
     const openTaskActionModal = (isPromoting, Task_id) => {
         setCurrentTaskId(Task_id);
         setIsPromoting(isPromoting);
         setIsTaskActionModalOpen(true);
     }
 
+    // Return appropriate state variable based on given state
+    const checkPermitForState = state => {
+        switch (state) {
+            case "Open":
+                return permitOpen
+            case "ToDo":
+                return permitToDo
+            case "Doing":
+                return permitDoing
+            case "Done":
+                return permitDone
+            default:
+                return false
+        }
+    }
+
+    // show demote button for "doing" and "done" state if user got permit
+    const demoteButton = (state, task) => {
+        if ((state == "Doing" || state == "Done") && checkPermitForState(state)) {
+            return (
+                // Able to open modal with 'isPromoting' is false
+                <IconButton onClick={() => openTaskActionModal(false,task.Task_id)}>
+                    <ArrowBackIcon />
+                </IconButton>
+            )
+        }
+    };
+
+    // show promote button for all state except "close" if user got permit
+    const promoteButton = (state, task) => {
+        if (checkPermitForState(state)) {
+            return (
+                // Able to open modal with 'isPromoting' is true
+                <IconButton onClick={() => openTaskActionModal(true,task.Task_id)}>
+                    <ArrowForwardIcon />
+                </IconButton>
+            )
+        }
+    };
+
+    // Render column of tasks based on the tasks' state
     const taskLists = Object.keys(tasks).map((state, index, array) => (
         <Grid item key={index} xs={12 / array.length} style={{ height: "70vh", padding : "0"}}>
             <Paper elevation={3} style={{ padding: "16px", height: "100%", overflow: "auto", margin : "0px 10px"}} >
@@ -175,11 +207,7 @@ function Tasks() {
                         borderTop: `6px solid ${task.Plan_color}`,
                         backgroundColor: "#fff",
                     }}>
-                        {(state === "Done" || state === "Doing") && 
-                            <IconButton onClick={() => openTaskActionModal(false,task.Task_id)}>
-                                <ArrowBackIcon />
-                            </IconButton>
-                        }
+                        {demoteButton(state, task)}
                         <Box style={{
                             flexGrow: 1,
                             display: "flex",
@@ -194,11 +222,7 @@ function Tasks() {
                                 {task.Task_id}
                             </Typography>
                         </Box>
-                        {(state != "Close") &&
-                            <IconButton onClick={() => openTaskActionModal(true,task.Task_id)}>
-                                <ArrowForwardIcon />
-                            </IconButton>
-                        }
+                        {promoteButton(state, task)}
                     </Paper>
                 )))}
             </Paper>
@@ -221,7 +245,7 @@ function Tasks() {
                 </Button>
             </Grid>
             }
-            {isPL && 
+            {permitCreate && 
             <Grid item xs={2} style={{ paddingLeft: "20px"}}>
                 <Button type="button" size="small" variant="contained" onClick={() => setIsTaskCreationModalOpen(true)} color="success">
                     Create Task
