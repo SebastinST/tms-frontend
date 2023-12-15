@@ -14,22 +14,6 @@ import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
 
-// Style for the modal
-const modalStyle = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: "90%", // Adjust the width as per your requirement
-    height: "80vh", // Adjust the height as needed
-    bgcolor: "background.paper",
-    boxShadow: 24,
-    p: 6,
-    outline: "none",
-    display: "flex",
-    flexDirection: "column"
-}
-
 function TaskDetailModal({
     currentTaskId,
     app,
@@ -38,16 +22,44 @@ function TaskDetailModal({
     setRefreshTasks
 }) {
     const navigate = useNavigate();
+
+    // Style for the modal
+    const modalStyle = {
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        width: "90%", // Adjust the width as per your requirement
+        height: "80vh", // Adjust the height as needed
+        bgcolor: "background.paper",
+        boxShadow: 24,
+        p: 6,
+        outline: "none",
+        display: "flex",
+        flexDirection: "column"
+    }
+
+    const initialInputs = {
+        'Task_id': "",
+        'Task_plan' : null,
+        'New_notes' : ""
+    };
     
+    // store inputs to be sent on update to DB with associated app acronym
+    const [inputs, setInputs] = useState(initialInputs);
+
     // store current task details
     const [task, setTask] = useState({});
-    const [refreshTask, setRefreshTask] = useState(false);
 
     // store permit to edit plan
-    const [isPM, setIsPM] = useState(false);
+    const [permitOpen, setPermitOpen] = useState(false);
 
     // store all available plans
     const [planOptions, setPlanOptions] = useState([]);
+
+    // store whether users want to edit/have edited current task details
+    const [editing, setEditing] = useState(false);
+    const [changedInputs, setChangedInputs] = useState(false);
 
     // get task details refresh when changed
     useEffect(() => {
@@ -59,25 +71,24 @@ function TaskDetailModal({
             navigate("/main");
         }
 
-        // Check permits here
+        // Check if permit result returns unauthorised access else return result
+        function checkPermitResult(result) {
+            if (result.response && result.response.status == 401) {
+                Cookies.remove('jwt-token');
+                navigate("/");
+            }
+            if (result === true) {
+                return true;
+            } else {
+                return false;
+            }
+        } 
 
-        // Check if current user is Project Manager to edit task_plan
-        async function checkPM() {
-            try {
-                await Checkgroup("pm").then(function(result){
-                    if (result.response && result.response.status == 401) {
-                        Cookies.remove('jwt-token');
-                        navigate("/");
-                    }
-                    if (result === true) {
-                        setIsPM(true);
-                    }
-                })
-            } catch (e) {
-                setIsPM(false);
-            }   
+        // Check permit here if user can edit task_plan in open state
+        const checkPermits = async () => {
+            setPermitOpen(await Checkgroup(app.App_permit_Open).then(checkPermitResult))
         }
-        checkPM();
+        checkPermits();
 
         if (currentTaskId != "") {
             async function getTaskById() {
@@ -99,7 +110,12 @@ function TaskDetailModal({
                         }
                     });
                     if (result.data) {
-                        setTask(result.data.data[0]);
+                        let task = result.data.data[0];
+                        setTask(task);
+                        setInputs(values => ({...values,
+                            'Task_id': task.Task_id,
+                            'Task_plan' : task.Task_plan,
+                        }))
                     }
                 } catch (e) {
                     try {
@@ -122,13 +138,12 @@ function TaskDetailModal({
                 }
             }
             getTaskById();
-            setRefreshTask(false);
         }
-    }, [currentTaskId, refreshTask]);
+    }, [isTaskDetailModalOpen]);
 
-    // Get plans once on render
+    // Get plans once on render if user can change task plan
     useEffect(() => {
-        if (isPM) {
+        if (permitOpen) {
             async function getPlansByApp() {
                 try {
                     let result = await Axios.get(`http://localhost:8000/getPlansByApp/${app.App_Acronym}`,{
@@ -161,27 +176,11 @@ function TaskDetailModal({
             }
             getPlansByApp();
         }
-    }, [isPM]) 
-
-    // store inputs to be sent on update to DB with associated app acronym
-    const [inputs, setInputs] = useState({
-        'Task_id': task.Task_id,
-        'Task_plan' : task.Task_plan,
-        'New_notes' : ""
-    });
-
-    // store whether users want to edit/have edited current task details
-    const [editing, setEditing] = useState(false);
-    const [changedInputs, setChangedInputs] = useState(false);
+    }, [permitOpen]) 
 
     // Handle starting/ending of editing
     const toggleEditing = () => {
         if (!editing) {
-            setInputs({
-                'Task_id': task.Task_id,
-                'Task_plan' : task.Task_plan,
-                'New_notes' : ""
-            });
             setEditing(true);
         } else {
             setEditing(false);
@@ -195,16 +194,6 @@ function TaskDetailModal({
         setInputs(values => ({...values, [name]: value}));
     }
 
-    // Handle plan select changes
-    const handlePlanChange = (event) => {
-        if (event != null) {
-            setInputs(values => ({...values, "Task_plan": event.value}));
-        } else {
-            // User cleared plan
-            setInputs(values => ({...values, "Task_plan": ""}));
-        }
-    }
-
     // Check if user changed current inputs from original
     useEffect(() => {
         if (inputs.New_notes === "" && inputs.Task_plan === task.Task_plan) {
@@ -214,11 +203,10 @@ function TaskDetailModal({
         }
     }, [task, inputs])
 
-    // Handle saving of task to DB
+    // Handle saving of task details to DB
     const handleSubmit = async() => {
-
         // Check if Project Manager is assigning plan
-        if (isPM && inputs.Task_plan != task.Task_plan && task.Task_state == "Open") {
+        if (permitOpen && inputs.Task_plan != task.Task_plan && task.Task_state == "Open") {
             console.log("assigning plan");
             try {
                 let result = await Axios.post(
@@ -241,8 +229,6 @@ function TaskDetailModal({
                 });
                 if (result) {
                     toast.success(result.data.message);
-                    setRefreshTask(true);
-                    setRefreshTasks(true);
                     handleCloseModal();
                 }
             } catch (e) {
@@ -254,11 +240,7 @@ function TaskDetailModal({
                     
                     if (e.response.status === 403) {
                         setIsTaskDetailModalOpen(false);
-                        setInputs({
-                            'Task_id': task.Task_id,
-                            'Task_plan' : task.Task_plan,
-                            'New_notes' : ""
-                        });
+                        setInputs(initialInputs);
                     }
     
                     let error = e.response.data
@@ -299,13 +281,8 @@ function TaskDetailModal({
                 });
                 if (result) {
                     toast.success(result.data.message);
-                    setRefreshTask(true);
                     setEditing(false);
-                    setInputs({
-                        'Task_id': task.Task_id,
-                        'Task_plan' : task.Task_plan,
-                        'New_notes' : ""
-                    });
+                    setInputs(initialInputs);
                 }
             } catch (e) {
                 try {
@@ -316,11 +293,7 @@ function TaskDetailModal({
                     
                     if (e.response.status === 403) {
                         setIsTaskDetailModalOpen(false);
-                        setInputs({
-                            'Task_id': task.Task_id,
-                            'Task_plan' : task.Task_plan,
-                            'New_notes' : ""
-                        });
+                        setInputs(initialInputs);
                     }
     
                     let error = e.response.data
@@ -341,11 +314,8 @@ function TaskDetailModal({
 
     const handleCloseModal = () => {
         setIsTaskDetailModalOpen(false);
-        setInputs({
-            'Task_id': task.Task_id,
-            'Task_plan' : task.Task_plan,
-            'New_notes' : ""
-        });
+        setInputs(initialInputs);
+        setRefreshTasks(true);
         setEditing(false);
     }
 
@@ -392,13 +362,13 @@ function TaskDetailModal({
                     <Typography sx={{ fontWeight: 'bold' }}>
                         Task Plan
                     </Typography>
-                    {isPM && editing && task.Task_state == "Open"
+                    {permitOpen && editing && task.Task_state == "Open"
                         ? <Select
                         name="Task_plan"
                         options={planOptions}
                         className="basic-single"
                         isClearable
-                        onChange={handlePlanChange}
+                        onChange={event => handleChange({target:{name :"Task_plan", value : event ? event.value : ""}})}
                         value={{
                             value : inputs.Task_plan,
                             label : inputs.Task_plan

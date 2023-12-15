@@ -38,16 +38,21 @@ function TaskActionModal({
         flexDirection: "column"
     }
     const navigate = useNavigate();
+
+    const initialInputs = {
+        'Task_id': "",
+        'Task_plan' : null,
+        'New_notes' : ""
+    }
     
+    // store inputs to be sent on update to DB with associated app acronym
+    const [inputs, setInputs] = useState(initialInputs);
+
     // store current task details
     const [task, setTask] = useState({});
 
-    // store inputs to be sent on update to DB with associated app acronym
-    const [inputs, setInputs] = useState({
-        'Task_id': "",
-        'Task_plan' : "",
-        'New_notes' : ""
-    });
+    // store permit to edit plan
+    const [permitDone, setPermitDone] = useState(false);
 
     // store all available plans
     const [planOptions, setPlanOptions] = useState([]);
@@ -62,7 +67,24 @@ function TaskActionModal({
             navigate("/main");
         }
 
-        // Check permits here for editing plan when rejecting
+        // Check if permit result returns unauthorised access else return result
+        function checkPermitResult(result) {
+            if (result.response && result.response.status == 401) {
+                Cookies.remove('jwt-token');
+                navigate("/");
+            }
+            if (result === true) {
+                return true;
+            } else {
+                return false;
+            }
+        } 
+
+        // Check permit here if user can edit task_plan in open state
+        const checkPermits = async () => {
+            setPermitDone(await Checkgroup(app.App_permit_Done).then(checkPermitResult))
+        }
+        checkPermits();
 
         if (currentTaskId != "") {
             async function getTaskById() {
@@ -113,42 +135,44 @@ function TaskActionModal({
             }
             getTaskById();
         }
-    }, [currentTaskId]);
+    }, [isTaskActionModalOpen]);
 
-    // Get plans once on render
+    // Get plans once on render if user can change task plan
     useEffect(() => {
-        async function getPlansByApp() {
-            try {
-                let result = await Axios.get(`http://localhost:8000/getPlansByApp/${app.App_Acronym}`,{
-                    headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}` }
-                }).catch(()=>{});
-                if (result.data.data.length > 0) {
-                    setPlanOptions(result.data.data.map(plan => (
-                        { value: plan.Plan_MVP_name, label: plan.Plan_MVP_name }
-                    )))
-                }
-            } catch (e) {
+        if (permitDone) {
+            async function getPlansByApp() {
                 try {
-                    if (e.response.status === 401) {
-                        Cookies.remove('jwt-token');
-                        navigate("/");
+                    let result = await Axios.get(`http://localhost:8000/getPlansByApp/${app.App_Acronym}`,{
+                        headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}` }
+                    }).catch(()=>{});
+                    if (result.data.data.length > 0) {
+                        setPlanOptions(result.data.data.map(plan => (
+                            { value: plan.Plan_MVP_name, label: plan.Plan_MVP_name }
+                        )))
                     }
-                    let error = e.response.data
-                    if (error) {
-                        // Show error message
-                        toast.error(error.message, {
+                } catch (e) {
+                    try {
+                        if (e.response.status === 401) {
+                            Cookies.remove('jwt-token');
+                            navigate("/");
+                        }
+                        let error = e.response.data
+                        if (error) {
+                            // Show error message
+                            toast.error(error.message, {
+                                autoClose: false,
+                            });
+                        }
+                    } catch (e) {
+                        toast.error(e, {
                             autoClose: false,
                         });
                     }
-                } catch (e) {
-                    toast.error(e, {
-                        autoClose: false,
-                    });
                 }
             }
+            getPlansByApp();
         }
-        getPlansByApp();
-    }, []) 
+    }, [permitDone]) 
 
     // Handle input field changes
     const handleChange = (event) => {
@@ -157,12 +181,11 @@ function TaskActionModal({
         setInputs(values => ({...values, [name]: value}));
     }
 
-    // Handle saving of task to DB
+    // Handle action on task
     const handleSubmit = async() => {
-        console.log(inputs);
         // Check if task is and can be demoted
         if (!isPromoting) {
-            if (task.Task_state == "Done") {
+            if (permitDone && task.Task_state == "Done") {
                 // Task is being rejected by PL
                 console.log("Rejecting Task");
                 try {
@@ -197,11 +220,7 @@ function TaskActionModal({
                         
                         if (e.response.status === 403) {
                             setIsTaskActionModalOpen(false);
-                            setInputs({
-                                'Task_id': task.Task_id,
-                                'Task_plan' : task.Task_plan,
-                                'New_notes' : ""
-                            });
+                            setInputs(initialInputs);
                         }
         
                         let error = e.response.data
@@ -252,11 +271,7 @@ function TaskActionModal({
                         
                         if (e.response.status === 403) {
                             setIsTaskActionModalOpen(false);
-                            setInputs({
-                                'Task_id': task.Task_id,
-                                'Task_plan' : task.Task_plan,
-                                'New_notes' : ""
-                            });
+                            setInputs(initialInputs);
                         }
         
                         let error = e.response.data
@@ -308,11 +323,7 @@ function TaskActionModal({
                     
                     if (e.response.status === 403) {
                         setIsTaskActionModalOpen(false);
-                        setInputs({
-                            'Task_id': task.Task_id,
-                            'Task_plan' : task.Task_plan,
-                            'New_notes' : ""
-                        });
+                        setInputs(initialInputs);
                     }
     
                     let error = e.response.data
@@ -334,11 +345,7 @@ function TaskActionModal({
     const handleCloseModal = () => {
         setIsTaskActionModalOpen(false);
         setRefreshTasks(true);
-        setInputs({
-            'Task_id': task.Task_id,
-            'Task_plan' : task.Task_plan,
-            'New_notes' : ""
-        });
+        setInputs(initialInputs);
     }
 
     return (

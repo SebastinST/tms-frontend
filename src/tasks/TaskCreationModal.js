@@ -11,22 +11,6 @@ import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
 
-// Style for the modal
-const modalStyle = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: "70%", // Adjust the width as per your requirement
-    height: "80%", // Adjust the height as needed
-    bgcolor: "background.paper",
-    boxShadow: 24,
-    p: 4,
-    outline: "none",
-    overflowY: "auto", // Add scroll if content is too long
-    display: "flex",
-    flexDirection: "column"
-}
 
 function TaskCreationModal({
     app,
@@ -35,13 +19,32 @@ function TaskCreationModal({
     setRefreshTasks
 }) {
     const navigate = useNavigate();
+    
+    // Style for the modal
+    const modalStyle = {
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        width: "70%", // Adjust the width as per your requirement
+        height: "80%", // Adjust the height as needed
+        bgcolor: "background.paper",
+        boxShadow: 24,
+        p: 4,
+        outline: "none",
+        overflowY: "auto", // Add scroll if content is too long
+        display: "flex",
+        flexDirection: "column"
+    }
 
-    // store inputs to be sent on update to DB with associated app acronym
-    const [inputs, setInputs] = useState({
+    const initialInputs = {
         "Task_app_Acronym": app.App_Acronym,
         "Task_name" : "",
         "Task_description" : ""
-    });
+    }
+
+    // store inputs to be sent on update to DB with associated app acronym
+    const [inputs, setInputs] = useState(initialInputs);
 
     // Handle input field changes
     const handleChange = (event) => {
@@ -73,9 +76,7 @@ function TaskCreationModal({
             });
             if (result) {
                 toast.success(result.data.message);
-                setRefreshTasks(true);
-                setIsTaskCreationModalOpen(false);
-                setInputs({});
+                handleCloseModal();
             }
         } catch (e) {
             try {
@@ -86,7 +87,7 @@ function TaskCreationModal({
                 
                 if (e.response.status === 403) {
                     setIsTaskCreationModalOpen(false);
-                    setInputs({});
+                    setInputs(initialInputs);
                 }
 
                 let error = e.response.data
@@ -104,8 +105,15 @@ function TaskCreationModal({
         }
     }
 
+    const handleCloseModal = () => {
+        setIsTaskCreationModalOpen(false);
+        setRefreshTasks(true);
+        setInputs(initialInputs);
+    }
+    // Fix creating multiple tasks
+
     return (
-        <Modal open={isTaskCreationModalOpen} onClose={() => setIsTaskCreationModalOpen(false)}>
+        <Modal open={isTaskCreationModalOpen} onClose={handleCloseModal}>
           <Box sx={modalStyle}>
             <Typography variant="h6" align="center" mb={2}>
               Create Task for App {app.App_Acronym}
