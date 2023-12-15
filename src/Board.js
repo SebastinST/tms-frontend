@@ -54,22 +54,50 @@ export default function Board({ route, navigation }) {
 
   useEffect(() => {
     const checkUserGroup = async () => {
+      //we need to retrieve the latest application permit from the database
+      let res
+      try {
+        res = await axios.get("http://localhost:8080/controller/getApplication/" + location.state.application.App_Acronym, {
+          headers: {
+            Authorization: "Bearer " + Cookies.get("token")
+          }
+        })
+      } catch (err) {
+        if (err.response) {
+          appDispatch({ type: "messages", payload: { message: err.response.data.errMessage, type: "info" } })
+        } else {
+          appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
+        }
+      }
       const isPL = await Checkgroup.Checkgroup("PL")
       const isPM = await Checkgroup.Checkgroup("PM")
-      setPermitCreate(await Checkgroup.Checkgroup(location.state.application.App_permit_create))
-      //console.log(location.state.application)
-      setPermitOpen(await Checkgroup.Checkgroup(location.state.application.App_permit_Open))
-      setPermitToDo(await Checkgroup.Checkgroup(location.state.application.App_permit_toDoList))
-      setPermitDoing(await Checkgroup.Checkgroup(location.state.application.App_permit_Doing))
-      setPermitDone(await Checkgroup.Checkgroup(location.state.application.App_permit_Done))
+      setPermitCreate(await Checkgroup.Checkgroup(res.data.data.App_permit_Create))
+      setPermitOpen(await Checkgroup.Checkgroup(res.data.data.App_permit_Open))
+      setPermitToDo(await Checkgroup.Checkgroup(res.data.data.App_permit_toDoList))
+      setPermitDoing(await Checkgroup.Checkgroup(res.data.data.App_permit_Doing))
+      setPermitDone(await Checkgroup.Checkgroup(res.data.data.App_permit_Done))
       setIsUserPL(isPL)
       setIsUserPM(isPM)
     }
 
-    if (appState.isLogged) {
-      checkUserGroup()
+    checkUserGroup()
+    if (appState.isLogged === false) {
+      navigate("/")
     }
   }, [location, appState.isLogged])
+
+  useEffect(() => {
+    return () => {
+      //reset all the permit states
+      setPermitCreate(false)
+      setPermitOpen(false)
+      setPermitToDo(false)
+      setPermitDoing(false)
+      setPermitDone(false)
+      setIsUserPL(false)
+      setIsUserPM(false)
+    }
+  }, [])
 
   const fetchData = async () => {
     try {
@@ -135,7 +163,7 @@ export default function Board({ route, navigation }) {
   useEffect(() => {
     fetchData()
     fetchPlans()
-  }, [location.state.application.App_Acronym])
+  }, [location.state.application.App_Acronym, isUserPM])
 
   const handleOpenCreateTaskModal = () => setOpenCreateTaskModal(true)
   const handleCloseCreateTaskModal = () => setOpenCreateTaskModal(false)
@@ -201,6 +229,11 @@ export default function Board({ route, navigation }) {
     } catch (err) {
       if (err.response) {
         appDispatch({ type: "messages", payload: { message: err.response.data.errMessage, type: "error" } })
+        if (err.response.data.errMessage === "You are not authorised") {
+          fetchData()
+          //Close the modal
+          setOpenTaskDetailsModal(false)
+        }
       } else {
         appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
       }
@@ -246,7 +279,6 @@ export default function Board({ route, navigation }) {
     useEffect(() => {
       if (selectedTask) {
         const currentNotes = selectedTask.Task_notes || ""
-        setUpdatedNotes(currentNotes)
         setInitialNotes(currentNotes)
         const currentPlan = selectedTask.Task_plan ? { value: selectedTask.Task_plan, label: selectedTask.Task_plan } : null
         setSelectedPlan(currentPlan)
@@ -276,12 +308,16 @@ export default function Board({ route, navigation }) {
     }
 
     const handleEditSave = async () => {
+      //check if updatenotes is empty, if it is, set it to null
+      if (updatedNotes === "") {
+        setUpdatedNotes(null)
+      }
       if (isEditMode) {
         // Save the changes
         try {
           let res, res2
           // Prepare the data for saving including the plan if it's editable
-          if (updatedNotes !== initialNotes) {
+          if (updatedNotes !== null && updatedNotes !== undefined) {
             res = await axios.put(
               `http://localhost:8080/controller/updateNotes/${selectedTask.Task_id}`,
               {
@@ -323,6 +359,11 @@ export default function Board({ route, navigation }) {
         } catch (err) {
           if (err.response) {
             appDispatch({ type: "messages", payload: { message: err.response.data.errMessage, type: "error" } })
+            if (err.response.data.errMessage === "You are not authorised") {
+              fetchData()
+              //Close the modal
+              setOpenTaskDetailsModal(false)
+            }
           } else {
             console.log(err)
             //appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
@@ -338,6 +379,9 @@ export default function Board({ route, navigation }) {
       if (!selectedTask || !selectedTask.nextState) {
         console.error("Selected task or nextState is not defined.")
         return
+      }
+      if (updatedNotes === "") {
+        setUpdatedNotes(null)
       }
 
       let url
@@ -380,6 +424,11 @@ export default function Board({ route, navigation }) {
       } catch (err) {
         if (err.response) {
           appDispatch({ type: "messages", payload: { message: err.response.data.errMessage, type: "error" } })
+          if (err.response.data.errMessage === "You are not authorised") {
+            fetchData()
+            //Close the modal
+            setOpenTaskDetailsModal(false)
+          }
         } else {
           appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
         }
@@ -444,10 +493,10 @@ export default function Board({ route, navigation }) {
                 multiline
                 disabled={true}
                 style={{
-                  maxHeight: "200px",
                   overflowY: "auto"
                 }}
                 fullWidth
+                rows={4}
                 value={selectedTask?.Task_description || "No description provided."}
               />
 
@@ -492,7 +541,7 @@ export default function Board({ route, navigation }) {
                 Close
               </Button>
               <Box>
-                {!openedByArrow && (
+                {!openedByArrow && selectedTask && selectedTask.Task_state !== "Close" && (
                   <Button onClick={handleEditSave} color="primary" style={{ marginRight: "8px", marginTop: "16px" }}>
                     {isEditMode ? "Save" : "Edit"}
                   </Button>
@@ -509,7 +558,7 @@ export default function Board({ route, navigation }) {
   const renderArrowBack = (status, task, index) => {
     if (canDemoteTask(status) && checkPermitForLane(status)) {
       return (
-        <IconButton onClick={event => handleMoveTask(event, task, Object.keys(tasks)[index - 1], "left")}>
+        <IconButton key={permitCreate} onClick={event => handleMoveTask(event, task, Object.keys(tasks)[index - 1], "left")}>
           <ArrowBackIcon />
         </IconButton>
       )
@@ -527,8 +576,6 @@ export default function Board({ route, navigation }) {
         return permitDoing
       case "Done":
         return permitDone
-      case "Close":
-        return permitClose
       default:
         return false
     }
@@ -565,7 +612,7 @@ export default function Board({ route, navigation }) {
                 Manage Plans
               </Button>
             )}
-            {permitCreate && (
+            {isUserPL && (
               <Button variant="contained" color="primary" onClick={handleOpenCreateTaskModal}>
                 Create Task
               </Button>
@@ -624,6 +671,7 @@ export default function Board({ route, navigation }) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
+                        flexWrap: "wrap", // Enable wrapping
                         padding: "8px",
                         marginBottom: "8px",
                         wordWrap: "break-word",
@@ -640,10 +688,13 @@ export default function Board({ route, navigation }) {
                           display: "flex",
                           flexDirection: "column",
                           alignItems: "center",
-                          textAlign: "center"
+                          textAlign: "center",
+                          wordBreak: "break-all" // Break long words
                         }}
                       >
-                        <Typography variant="body1">{task.name}</Typography>
+                        <Typography variant="body1" style={{ maxWidth: "100%" }}>
+                          {task.name}
+                        </Typography>
                         <Typography variant="body2" style={{ fontSize: "0.8em", color: "gray" }}>
                           {task.id}
                         </Typography>
