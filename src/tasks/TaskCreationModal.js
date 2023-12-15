@@ -118,7 +118,7 @@ function TaskCreationModal({
             <Typography variant="h6" align="center" mb={2}>
               Create Task for App {app.App_Acronym}
             </Typography>
-            <TextField autoFocus margin="normal" label="Task Name" fullWidth name="Task_name" value={inputs.Task_name} onChange={handleChange} />
+            <TextField autoFocus margin="normal" label="Task Name*" fullWidth name="Task_name" value={inputs.Task_name} onChange={handleChange} />
             <TextField margin="normal" label="Task Description" fullWidth multiline rows={10} name="Task_description" value={inputs.Task_description} onChange={handleChange} style={{flex:1}}/>
             <Box mt={2} style={{display:"flex", justifyContent:"space-between"}}>
               <Button onClick={() => setIsTaskCreationModalOpen(false)} color="primary">

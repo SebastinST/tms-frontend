@@ -50,6 +50,7 @@ function TaskDetailModal({
 
     // store current task details
     const [task, setTask] = useState({});
+    const [refreshTask, setRefreshTask] = useState(false);
 
     // store permit to edit plan
     const [permitOpen, setPermitOpen] = useState(false);
@@ -139,7 +140,7 @@ function TaskDetailModal({
             }
             getTaskById();
         }
-    }, [isTaskDetailModalOpen]);
+    }, [isTaskDetailModalOpen, refreshTask]);
 
     // Get plans once on render if user can change task plan
     useEffect(() => {
@@ -283,6 +284,7 @@ function TaskDetailModal({
                     toast.success(result.data.message);
                     setEditing(false);
                     setInputs(initialInputs);
+                    setRefreshTask(true);
                 }
             } catch (e) {
                 try {
@@ -339,8 +341,8 @@ function TaskDetailModal({
     return (
     <Modal open={isTaskDetailModalOpen} onClose={handleCloseModal}>
         <Box sx={modalStyle}>
-            <Box style={{display:"flex", gap:"70px"}}>
-                <Box style={{display:"flex", flexDirection:"column"}}>
+            <Box style={{display:"flex", gap:"70px", flex:1}}>
+                <Box style={{display:"flex", flexDirection:"column", gap:2}}>
                     <Typography sx={{ fontWeight: 'bold' }}>
                         App Acronym
                     </Typography>
@@ -354,6 +356,12 @@ function TaskDetailModal({
                         {task.Task_name}
                     </Typography>
                     <Typography sx={{ fontWeight: 'bold' }}>
+                        Task ID
+                    </Typography>
+                    <Typography variant="body1" mb={2}>
+                        {task.Task_id}
+                    </Typography>
+                    <Typography sx={{ fontWeight: 'bold' }}>
                         Task State
                     </Typography>
                     <Typography variant="body1" mb={2}>
@@ -362,12 +370,11 @@ function TaskDetailModal({
                     <Typography sx={{ fontWeight: 'bold' }}>
                         Task Plan
                     </Typography>
-                    {permitOpen && editing && task.Task_state == "Open"
+                    {(permitOpen && editing && task.Task_state == "Open")
                         ? <Select
                         name="Task_plan"
                         options={planOptions}
                         className="basic-single"
-                        isClearable
                         onChange={event => handleChange({target:{name :"Task_plan", value : event ? event.value : ""}})}
                         value={{
                             value : inputs.Task_plan,

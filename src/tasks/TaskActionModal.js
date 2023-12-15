@@ -351,8 +351,8 @@ function TaskActionModal({
     return (
     <Modal open={isTaskActionModalOpen} onClose={handleCloseModal}>
         <Box sx={modalStyle}>
-            <Box style={{display:"flex", gap:"70px"}}>
-                <Box style={{display:"flex", flexDirection:"column"}}>
+            <Box style={{display:"flex", gap:"70px", flex:1}}>
+                <Box style={{display:"flex", flexDirection:"column", gap:2}}>
                     <Typography sx={{ fontWeight: 'bold' }}>
                         App Acronym
                     </Typography>
@@ -366,6 +366,12 @@ function TaskActionModal({
                         {task.Task_name}
                     </Typography>
                     <Typography sx={{ fontWeight: 'bold' }}>
+                        Task ID
+                    </Typography>
+                    <Typography variant="body1" mb={2}>
+                        {task.Task_id}
+                    </Typography>
+                    <Typography sx={{ fontWeight: 'bold' }}>
                         Task State
                     </Typography>
                     <Typography variant="body1" mb={2}>
@@ -374,12 +380,11 @@ function TaskActionModal({
                     <Typography sx={{ fontWeight: 'bold' }}>
                         Task Plan
                     </Typography>
-                    {task.Task_state == "Done"
+                    {(task.Task_state == "Done" && !isPromoting)
                         ? <Select
                         name="Task_plan"
                         options={planOptions}
                         className="basic-single"
-                        isClearable
                         onChange={event => handleChange({target:{name :"Task_plan", value : event ? event.value : ""}})}
                         value={{
                             value : inputs.Task_plan,
@@ -424,7 +429,9 @@ function TaskActionModal({
                 <Button onClick={handleCloseModal} color="primary">
                     Close
                 </Button>
-                <Button onClick={handleSubmit} variant="contained" color="success">
+                <Button onClick={handleSubmit} variant="contained" 
+                    color={isPromoting ? "success" : "error"}
+                >
                     {isPromoting ? "Promote" : "Demote"}
                 </Button>
             </Box>
