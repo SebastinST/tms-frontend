@@ -162,6 +162,7 @@ export default function Home() {
       const newApplications = applications.map(app => (app.App_Acronym === updatedApp.App_Acronym ? updatedApp : app))
       setApplications(newApplications)
       setEditRow(null)
+      appDispatch({ type: "messages", payload: { message: "Application updated successfully", type: "success" } })
     } catch (error) {
       console.error("Error saving data:", error)
     }

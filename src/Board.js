@@ -209,7 +209,11 @@ export default function Board({ route, navigation }) {
       setArrowDirection(direction) // Set the direction of the arrow clicked
       setOpenTaskDetailsModal(true)
     } catch (err) {
-      // handle error
+      if (err.response) {
+        appDispatch({ type: "messages", payload: { message: err.response.data.errMessage, type: "error" } })
+      } else {
+        appDispatch({ type: "messages", payload: { message: "Server is down", type: "error" } })
+      }
     }
   }
 
@@ -514,7 +518,7 @@ export default function Board({ route, navigation }) {
                 }}
                 fullWidth
                 rows={10}
-                value={selectedTask?.Task_notes || "No notes added."}
+                value={selectedTask?.Task_notes ?? ""}
               />
               <TextField
                 label="Notes"
