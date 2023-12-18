@@ -1,5 +1,4 @@
 // Internal
-import './Main.css';
 import Navbar from '../components/Navbar';
 import AppHeader from './AppHeader';
 import AddApp from './AddApp';
@@ -12,6 +11,8 @@ import Axios from 'axios';
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 function Main() {
     const navigate = useNavigate();
@@ -90,14 +91,16 @@ function Main() {
     return (
         <>
         <Navbar />
-        <h1>Application List</h1>
-        <div className="main-ui">
-            <AppHeader />
+        <Box sx={{width:"100%", display:"flex", flexDirection:"column"}}>
+            <Typography variant="h4" align="center">Application List</Typography>
+            <AppHeader/>
+        </Box>
+        <Box sx={{flex:1, display:"flex", flexDirection:"column", gap:"5px", overflow:"auto"}}>
             {isPL && <AddApp setRefreshApps={setRefreshApps}/>}
-            <div className="apps-container">
+            <Box sx={{flex:1, display:"flex", flexDirection:"column", gap:"5px"}}>
                 {appRows}
-            </div>  
-        </div>
+            </Box>
+        </Box>
         </>
     );
 }

@@ -1,5 +1,4 @@
 // Internal
-import './Tasks.css';
 import Navbar from '../components/Navbar';
 import Checkgroup from '../components/Checkgroup';
 import TaskCreationModal from './TaskCreationModal';

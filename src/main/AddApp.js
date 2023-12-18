@@ -135,23 +135,23 @@ function AddApp(props) {
     return(
         <form>
             <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 650 }} size="small">
+            <Table size="small">
                 <TableBody>
                     <TableRow>
-                        <TableCell align="center" style={{ width: "5%" }}>
+                        <TableCell align="center" sx={{width:"10%", padding:0}}>
                             <TextField name="App_Acronym" required size="small" label="App " value={inputs.App_Acronym || ""} onChange={handleChange}/>
                         </TableCell>
-                        <TableCell align="center" style={{ width: "5%" }}>
-                            <TextField name="Start" size="small" label="Start" value={inputs.App_startDate || ""} onChange={handleChange}/>
-                            <TextField name="End" size="small" label="End" value={inputs.App_endDate || ""} onChange={handleChange}/>
+                        <TableCell align="center" sx={{width:"15%", padding:1}}>
+                            <TextField name="App_startDate" size="small" label="Start" value={inputs.App_startDate || ""} onChange={handleChange} inputProps={{ maxLength: 10 }} sx={{ paddingBottom:1 }}/>
+                            <TextField name="App_endDate" size="small" label="End" value={inputs.App_endDate || ""} onChange={handleChange}/>
                         </TableCell>
-                        <TableCell align="center" style={{ width: "5%" }}>
-                            <TextField name="App_Rnumber" required size="small" label="Rnum" value={inputs.App_Rnumber || ""} onChange={handleChange} type="number" />
+                        <TableCell align="center" sx={{width:"5%", padding:0}}>
+                            <TextField name="App_Rnumber" required size="small" label="Rnum" value={inputs.App_Rnumber || ""} onChange={handleChange} type="number" InputProps={{ inputProps: { min: 0, max: 999 } }}/>
                         </TableCell>
-                        <TableCell align="center" style={{ width: "25%" }}>
+                        <TableCell align="center" sx={{width:"20%", padding:0}}>
                             <TextField name="App_Description" required size="small" label="App Description" value={inputs.App_Description || ""} onChange={handleChange} multiline rows={2}/>
                         </TableCell>
-                        <TableCell align="center" style={{ width: "8%" }}>
+                        <TableCell align="center" sx={{width:"8%", padding:1}}>
                             <Select
                                 name="App_permit_create"
                                 options={groupOptions}
@@ -168,7 +168,7 @@ function AddApp(props) {
                                 isClearable
                                 />
                         </TableCell>
-                        <TableCell align="center" style={{ width: "8%" }}>
+                        <TableCell align="center" sx={{width:"8%", padding:1}}>
                             <Select
                                 name="App_permit_Open"
                                 options={groupOptions}
@@ -185,7 +185,7 @@ function AddApp(props) {
                                 isClearable
                                 />
                         </TableCell>
-                        <TableCell align="center" style={{ width: "8%" }}>
+                        <TableCell align="center" sx={{width:"8%", padding:1}}>
                             <Select
                                 name="App_permit_toDoList"
                                 options={groupOptions}
@@ -202,7 +202,7 @@ function AddApp(props) {
                                 isClearable
                                 />
                         </TableCell>
-                        <TableCell align="center" style={{ width: "8%" }}>
+                        <TableCell align="center" sx={{width:"8%", padding:1}}>
                             <Select
                                 name="App_permit_Doing"
                                 options={groupOptions}
@@ -219,7 +219,7 @@ function AddApp(props) {
                                 isClearable
                                 />
                         </TableCell>
-                        <TableCell align="center" style={{ width: "8%" }}>
+                        <TableCell align="center" sx={{width:"8%", padding:1}}>
                             <Select
                                 name="App_permit_Done"
                                 options={groupOptions}
@@ -236,7 +236,7 @@ function AddApp(props) {
                                 isClearable
                                 />
                         </TableCell>
-                        <TableCell align="center" style={{ width: "10%" }}>
+                        <TableCell align="center" sx={{width:"10%", padding:0}}>
                             <div className="users-table-buttons">
                                 <Button type="button" size="small" variant="contained" onClick={handleSubmit} color="success">Create</Button>
                             </div>

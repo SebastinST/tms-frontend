@@ -108,7 +108,7 @@ function AddPlan(props) {
     return(
         <form>
             <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 650 }} size="small">
+            <Table size="small">
                 <TableHead>
                     <TableRow>
                         <TableCell align="center" style={{ width: "25%" }}>Plan Name*</TableCell>

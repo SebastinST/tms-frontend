@@ -5,7 +5,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Axios from 'axios';
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
@@ -109,13 +109,13 @@ function TaskCreationModal({
             <Typography variant="h6" align="center" mb={2}>
               Create Task for App {app.App_Acronym}
             </Typography>
-            <TextField autoFocus margin="normal" label="Task Name*" fullWidth name="Task_name" value={inputs.Task_name} onChange={handleChange} />
-            <TextField margin="normal" label="Task Description" fullWidth multiline rows={10} name="Task_description" value={inputs.Task_description} onChange={handleChange} style={{flex:1}}/>
+            <TextField autoFocus margin="normal" label="Task Name*" name="Task_name" value={inputs.Task_name} onChange={handleChange} />
+            <TextField margin="normal" label="Task Description" multiline rows={10} name="Task_description" value={inputs.Task_description} onChange={handleChange} style={{flex:1}}/>
             <Box mt={2} style={{display:"flex", justifyContent:"space-between"}}>
-              <Button onClick={() => setIsTaskCreationModalOpen(false)} color="primary">
+              <Button onClick={handleCloseModal} color="primary">
                 Close
               </Button>
-              <Button onClick={handleSubmit} color="primary" style={{ marginLeft: "10px" }}>
+              <Button onClick={handleSubmit} variant="contained" color="success" style={{ marginLeft: "10px" }}>
                 Create
               </Button>
             </Box>

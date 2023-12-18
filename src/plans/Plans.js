@@ -1,11 +1,12 @@
 // Internal
-import './Plans.css';
 import Navbar from '../components/Navbar';
 import AddPlan from './AddPlan';
 import EditPlan from './EditPlan';
 
 // External
 import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
+import Typography from '@mui/material/Typography';
 import { useState, useEffect } from 'react';
 import Axios from 'axios';
 import Cookies from 'js-cookie';
@@ -75,16 +76,18 @@ function Plans() {
     return (
         <>
         <Navbar />
-        <div className="plans-header">
-            <h1>Plans for App {app && app.App_Acronym}</h1>
-            <Button className="back-button" type="button" size="small" variant="outlined" onClick={() => navigate(-1, { state : app })}>Back</Button>
-        </div>
-        <div className="main-ui">
+        <Box sx={{width:"100%", display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", marginBottom:"10px"}}>
+            <Typography variant="h4" align="center">
+                Plans for App {app && app.App_Acronym}
+            </Typography>
+            <Button className="back-button" type="button" size="small" variant="outlined" onClick={() => navigate(-1, { state : app })} style={{ marginLeft: 20, alignSelf:'flex-start'}}>Back</Button>
+        </Box>
+        <Box sx={{flex:1, display:"flex", flexDirection:"column", gap:"5px", overflow:"auto", width:"100%"}}>
             <AddPlan app={app} refreshPlans={refreshPlans} setRefreshPlans={setRefreshPlans}/>
-            <div className="apps-container">
+            <Box sx={{flex:1, display:"flex", flexDirection:"column", gap:"5px"}}>
                 {planRows}
-            </div>
-        </div>
+            </Box>
+        </Box>
         </>
     );
 }

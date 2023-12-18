@@ -13,6 +13,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
 
 function EditApp(props) {
     const {
@@ -122,7 +123,7 @@ function EditApp(props) {
     function actionButtons() {
         if (isPL) {
             return (
-                <div className="apps-table-buttons">
+                <Box sx={{ display:"flex", justifyContent:"space-around", flexDirection:"column", gap:"5px", padding:"10px"}}>
                     {editing
                     ?   changedInputs
                         ? <Button type="button" size="small" variant="contained" onClick={handleSubmit}color="success">Save</Button>
@@ -130,7 +131,7 @@ function EditApp(props) {
                     :   <Button type="button" size="small" variant="outlined" onClick={toggleEditing}>Edit</Button>
                     }
                     <Button type="button" size="small" variant="contained" onClick={() => navigate('/tasks', { state : app })} color="success">GO</Button>
-                </div>
+                </Box>
             );
         } else {
             return (
@@ -199,17 +200,17 @@ function EditApp(props) {
     return(
         <form key={app.App_Acronym}>
             <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 650 }} size="small">
+            <Table size="small">
                 <TableBody>
                     <TableRow>
-                        <TableCell align="center" style={{ width: "5%" }}>
+                        <TableCell align="center" sx={{width:"10%", padding:0}}>
                             {app.App_Acronym}
                         </TableCell>
-                        <TableCell align="center" style={{ width: "5%" }}>
+                        <TableCell sx={{width:"15%", padding:1}}>
                             {
                             editing
                             ?   <div>
-                                <TextField name="App_startDate" size="small" label="Start" value={inputs.App_startDate || ""} onChange={handleChange} inputProps={{ maxLength: 10 }}/> <TextField name="App_endDate" size="small" label="End" value={inputs.App_endDate || ""} onChange={handleChange} inputProps={{ maxLength: 10 }}/>
+                                <TextField name="App_startDate" size="small" label="Start" value={inputs.App_startDate || ""} onChange={handleChange} inputProps={{ maxLength: 10 }} sx={{ paddingBottom:1 }}/> <TextField name="App_endDate" size="small" label="End" value={inputs.App_endDate || ""} onChange={handleChange} inputProps={{ maxLength: 10 }}/>
                                 </div>
                             : <div>
                             Start: {app.App_startDate}<br/>
@@ -217,17 +218,17 @@ function EditApp(props) {
                             </div>
                             }
                         </TableCell>
-                        <TableCell align="center" style={{ width: "5%" }}>
+                        <TableCell align="center" sx={{width:"5%", padding:0}}>
                             {app.App_Rnumber}
                         </TableCell>
-                        <TableCell style={{ width: "25%" }}>
+                        <TableCell sx={{width:"20%", padding:0}}>
                             {
                             editing
-                            ? <TextField minRows={4} name="App_Description" size="small" label="App Description" value={inputs.App_Description || ""} onChange={handleChange}/>
+                            ? <TextField name="App_Description" size="small" label="App Description" value={inputs.App_Description || ""} onChange={handleChange} multiline rows={2} />
                             : app.App_Description
                             }
                         </TableCell>
-                        <TableCell align="center" style={{ width: "8%" }}>
+                        <TableCell align="center" sx={{width:"8%", padding:1}}>
                             {editing
                             ? <Select
                                 name="App_permit_create"
@@ -245,11 +246,11 @@ function EditApp(props) {
                                 isClearable
                                 />
                             : app.App_permit_create
-                                ? <button className="group-button">{app.App_permit_create}</button>
+                                ? <Button variant="outlined" size="small" sx={{pointerEvents: "none"}}>{app.App_permit_create}</Button>
                                 : ""
                             }
                         </TableCell>
-                        <TableCell align="center" style={{ width: "8%" }}>
+                        <TableCell align="center" sx={{width:"8%", padding:1}}>
                             {editing
                             ? <Select
                                 name="App_permit_Open"
@@ -267,11 +268,11 @@ function EditApp(props) {
                                 isClearable
                                 />
                             : app.App_permit_Open
-                                ? <button className="group-button">{app.App_permit_Open}</button>
+                                ? <Button variant="outlined" size="small" sx={{pointerEvents: "none"}}>{app.App_permit_Open}</Button>
                                 : ""
                             }
                         </TableCell>
-                        <TableCell align="center" style={{ width: "8%" }}>
+                        <TableCell align="center" sx={{width:"8%", padding:1}}>
                             {editing
                             ? <Select
                                 name="App_permit_toDoList"
@@ -289,11 +290,11 @@ function EditApp(props) {
                                 isClearable
                                 />
                             : app.App_permit_toDoList
-                                ? <button className="group-button">{app.App_permit_toDoList}</button>
+                                ? <Button variant="outlined" size="small" sx={{pointerEvents: "none"}}>{app.App_permit_toDoList}</Button>
                                 : ""
                             }
                         </TableCell>
-                        <TableCell align="center" style={{ width: "8%" }}>
+                        <TableCell align="center" sx={{width:"8%", padding:1}}>
                             {editing
                             ? <Select
                                 name="App_permit_Doing"
@@ -311,11 +312,11 @@ function EditApp(props) {
                                 isClearable
                                 />
                             : app.App_permit_Doing
-                                ? <button className="group-button">{app.App_permit_Doing}</button>
+                                ? <Button variant="outlined" size="small" sx={{pointerEvents: "none"}}>{app.App_permit_Doing}</Button>
                                 : ""
                             }
                         </TableCell>
-                        <TableCell align="center" style={{ width: "8%" }}>
+                        <TableCell align="center" sx={{width:"8%", padding:1}}>
                             {editing
                             ? <Select
                                 name="App_permit_Done"
@@ -333,11 +334,11 @@ function EditApp(props) {
                                 isClearable
                                 />
                             : app.App_permit_Done
-                                ? <button className="group-button">{app.App_permit_Done}</button>
+                                ? <Button variant="outlined" size="small" sx={{pointerEvents: "none"}}>{app.App_permit_Done}</Button>
                                 : ""
                             }
                         </TableCell>
-                        <TableCell align="center" style={{ width: "10%" }}>
+                        <TableCell align="center" sx={{width:"10%", padding:0}}>
                             {actionButtons()}
                         </TableCell>
                     </TableRow>

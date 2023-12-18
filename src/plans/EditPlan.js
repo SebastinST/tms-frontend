@@ -13,6 +13,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
 
 function EditPlan(props) {
     const {
@@ -125,16 +126,16 @@ function EditPlan(props) {
                         <TableCell align="center" style={{ width: "25%" }}>
                             {plan.Plan_MVP_name}
                         </TableCell>
-                        <TableCell align="center" style={{ width: "25%" }}>
+                        <TableCell style={{ width: "25%" }}>
                             {
                             editing
-                            ?   <div>
-                                <TextField name="Plan_startDate" size="small" label="Start" value={inputs.Plan_startDate || ""} onChange={handleChange}/> <TextField name="Plan_endDate" size="small" label="End" value={inputs.Plan_endDate || ""} onChange={handleChange}/>
-                                </div>
-                            : <div>
+                            ?   <Box>
+                                <TextField name="Plan_startDate" size="small" label="Start" value={inputs.Plan_startDate || ""} onChange={handleChange} inputProps={{ maxLength: 10 }}/> <TextField name="Plan_endDate" size="small" label="End" value={inputs.Plan_endDate || ""} onChange={handleChange} inputProps={{ maxLength: 10 }}/>
+                                </Box>
+                            : <Box>
                                 Start: {plan.Plan_startDate}<br/>
                                 End: {plan.Plan_endDate}
-                            </div>
+                            </Box>
                             }
                         </TableCell>
                         <TableCell align="center" style={{ width: "25%", backgroundColor : plan.Plan_color}} >
