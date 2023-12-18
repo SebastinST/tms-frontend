@@ -2,24 +2,23 @@
 import Checkgroup from '../components/Checkgroup';
 
 // External
-import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import Select from "react-select";
-import { useState, useEffect } from 'react';
+import Modal from "@mui/material/Modal";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 import Axios from 'axios';
 import Cookies from 'js-cookie';
-import { toast } from 'react-toastify';
+import { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import Select from "react-select";
+import { toast } from 'react-toastify';
 
 function TaskDetailModal({
     currentTaskId,
     app,
     isTaskDetailModalOpen,
     setIsTaskDetailModalOpen,
-    setRefreshTasks
 }) {
     const navigate = useNavigate();
 
@@ -62,7 +61,7 @@ function TaskDetailModal({
     const [editing, setEditing] = useState(false);
     const [changedInputs, setChangedInputs] = useState(false);
 
-    // get task details refresh when changed
+    // get task details and permits on render and modal change or successful update
     useEffect(() => {
         // Check if app is valid, if not push to main page
         if (!app) {
@@ -120,10 +119,6 @@ function TaskDetailModal({
                     }
                 } catch (e) {
                     try {
-                        if (e.response.status === 401) {
-                            Cookies.remove('jwt-token');
-                            navigate("/");
-                        }
                         let error = e.response.data
                         if (error) {
                             // Show error message
@@ -140,6 +135,7 @@ function TaskDetailModal({
             }
             getTaskById();
         }
+        setRefreshTask(false);
     }, [isTaskDetailModalOpen, refreshTask]);
 
     // Get plans once on render if user can change task plan
@@ -157,10 +153,6 @@ function TaskDetailModal({
                     }
                 } catch (e) {
                     try {
-                        if (e.response.status === 401) {
-                            Cookies.remove('jwt-token');
-                            navigate("/");
-                        }
                         let error = e.response.data
                         if (error) {
                             // Show error message
@@ -219,6 +211,10 @@ function TaskDetailModal({
                         Cookies.remove('jwt-token');
                         navigate("/");
                     }
+
+                    if (e.response.status === 403) {
+                        handleCloseModal();
+                    }
         
                     let error = e.response.data
                     if (error) {
@@ -234,16 +230,6 @@ function TaskDetailModal({
                 }
             } catch (e) {
                 try {
-                    if (e.response.status === 401) {
-                        Cookies.remove('jwt-token');
-                        navigate("/");
-                    }
-                    
-                    if (e.response.status === 403) {
-                        setIsTaskDetailModalOpen(false);
-                        setInputs(initialInputs);
-                    }
-    
                     let error = e.response.data
                     if (error) {
                         // Show error message
@@ -267,9 +253,14 @@ function TaskDetailModal({
                     inputs, 
                     {headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}`}}
                 ).catch((e)=>{
+                    console.log(e);
                     if (e.response.status === 401) {
                         Cookies.remove('jwt-token');
                         navigate("/");
+                    }
+
+                    if (e.response.status === 403) {
+                        handleCloseModal();
                     }
         
                     let error = e.response.data
@@ -282,22 +273,10 @@ function TaskDetailModal({
                 });
                 if (result) {
                     toast.success(result.data.message);
-                    setEditing(false);
-                    setInputs(initialInputs);
-                    setRefreshTask(true);
+                    handleSuccessfulUpdate();
                 }
             } catch (e) {
                 try {
-                    if (e.response.status === 401) {
-                        Cookies.remove('jwt-token');
-                        navigate("/");
-                    }
-                    
-                    if (e.response.status === 403) {
-                        setIsTaskDetailModalOpen(false);
-                        setInputs(initialInputs);
-                    }
-    
                     let error = e.response.data
                     if (error) {
                         // Show error message
@@ -317,8 +296,13 @@ function TaskDetailModal({
     const handleCloseModal = () => {
         setIsTaskDetailModalOpen(false);
         setInputs(initialInputs);
-        setRefreshTasks(true);
         setEditing(false);
+    }
+
+    const handleSuccessfulUpdate = () => {
+        setInputs(initialInputs);
+        setEditing(false);
+        setRefreshTask(true);
     }
 
     const actionButton = () => {

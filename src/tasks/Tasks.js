@@ -25,7 +25,6 @@ function Tasks() {
     const navigate = useNavigate();
     const token = Cookies.get("jwt-token");
     const [isPM, setIsPM] = useState(false);
-    const [refreshTasks, setRefreshTasks] = useState(false);
     const [tasks, setTasks] = useState({
         Open: [],
         ToDo: [],
@@ -52,13 +51,26 @@ function Tasks() {
     const [permitDoing, setPermitDoing] = useState(false);
     const [permitDone, setPermitDone] = useState(false);
     
-    // Get app details on render for permits
     useEffect(() => {
+        // getAppById to get permits for tasks on render and refresh when modal change
         async function getAppById() {
             try {
                 let result = await Axios.get(`http://localhost:8000/getAppById/${app.App_Acronym}`,{
                     headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}` }
-                }).catch(()=>{});
+                }).catch((e)=>{
+                    if (e.response.status === 401) {
+                        Cookies.remove('jwt-token');
+                        navigate("/");
+                    }
+        
+                    let error = e.response.data
+                    if (error) {
+                        // Show error message
+                        toast.error(error.message, {
+                            autoClose: false,
+                        });
+                    }
+                });
                 
                 // Check if app is valid, if not push to main page
                 if (result.data) {
@@ -71,10 +83,6 @@ function Tasks() {
                 }
             } catch (e) {
                 try {
-                    if (e.response.status === 401) {
-                        Cookies.remove('jwt-token');
-                        navigate("/");
-                    }
                     let error = e.response.data
                     if (error) {
                         // Show error message
@@ -90,39 +98,26 @@ function Tasks() {
             }
         }
         getAppById();
-    },[])
 
-    useEffect(() => {
-        function checkPermitResult(result) {
-            if (result.response && result.response.status == 401) {
-                Cookies.remove('jwt-token');
-                navigate("/");
-            }
-            if (result === true) {
-                return true;
-            } else {
-                return false;
-            }
-        } 
-
-        const checkPermits = async () => {
-            setIsPM(await Checkgroup("pm").then(checkPermitResult));
-            setPermitCreate(await Checkgroup(app.App_permit_create).then(checkPermitResult))
-            setPermitOpen(await Checkgroup(app.App_permit_Open).then(checkPermitResult))
-            setPermitToDo(await Checkgroup(app.App_permit_toDoList).then(checkPermitResult))
-            setPermitDoing(await Checkgroup(app.App_permit_Doing).then(checkPermitResult))
-            setPermitDone(await Checkgroup(app.App_permit_Done).then(checkPermitResult))
-        }
-        checkPermits();
-    }, [token, app, refreshTasks])
-
-    // getTasksByApp to display tasks details and refresh when changed, show latest on top
-    useEffect(() => {
+        // getTasksByApp to display tasks details on render and refresh when modal change
         async function getTasksByApp() {
             try {
                 let result = await Axios.get(`http://localhost:8000/getTasksByApp/${app.App_Acronym}`,{
                     headers: { Authorization: `Bearer ${Cookies.get('jwt-token')}` }
-                }).catch(()=>{});
+                }).catch((e)=>{
+                    if (e.response.status === 401) {
+                        Cookies.remove('jwt-token');
+                        navigate("/");
+                    }
+        
+                    let error = e.response.data
+                    if (error) {
+                        // Show error message
+                        toast.error(error.message, {
+                            autoClose: false,
+                        });
+                    }
+                });
                 if (result.data) {
                     let newTasks = {
                         Open: [],
@@ -146,10 +141,6 @@ function Tasks() {
                 }
             } catch (e) {
                 try {
-                    if (e.response.status === 401) {
-                        Cookies.remove('jwt-token');
-                        navigate("/");
-                    }
                     let error = e.response.data
                     if (error) {
                         // Show error message
@@ -165,8 +156,43 @@ function Tasks() {
             }
         }
         getTasksByApp();
-        setRefreshTasks(false);
-    }, [refreshTasks]);
+    },[
+        // Refresh on modal opening or closing
+        isTaskDetailModalOpen, 
+        isTaskCreationModalOpen, 
+        isTaskActionModalOpen
+    ])
+
+    // Check permits on render, changes in app/token or modal changes
+    useEffect(() => {
+        function checkPermitResult(result) {
+            if (result.response && result.response.status == 401) {
+                Cookies.remove('jwt-token');
+                navigate("/");
+            }
+            if (result === true) {
+                return true;
+            } else {
+                return false;
+            }
+        } 
+
+        const checkPermits = async () => {
+            setIsPM(await Checkgroup("pm").then(checkPermitResult));
+            setPermitCreate(await Checkgroup(app.App_permit_create).then(checkPermitResult))
+            setPermitOpen(await Checkgroup(app.App_permit_Open).then(checkPermitResult))
+            setPermitToDo(await Checkgroup(app.App_permit_toDoList).then(checkPermitResult))
+            setPermitDoing(await Checkgroup(app.App_permit_Doing).then(checkPermitResult))
+            setPermitDone(await Checkgroup(app.App_permit_Done).then(checkPermitResult))
+        }
+        checkPermits();
+    }, [
+        token, 
+        app,
+        isTaskDetailModalOpen, 
+        isTaskCreationModalOpen, 
+        isTaskActionModalOpen
+    ])
 
     // Handling opening of task detail modal with corresponding task id
     const openTaskDetailModal = (Task_id) => {
@@ -293,14 +319,12 @@ function Tasks() {
             app={app}
             isTaskCreationModalOpen={isTaskCreationModalOpen} 
             setIsTaskCreationModalOpen={setIsTaskCreationModalOpen}
-            setRefreshTasks={setRefreshTasks}
         />
         <TaskDetailModal
             currentTaskId={currentTaskId}
             app={app}
             isTaskDetailModalOpen={isTaskDetailModalOpen}
             setIsTaskDetailModalOpen={setIsTaskDetailModalOpen}
-            setRefreshTasks={setRefreshTasks}
         />
         <TaskActionModal
             currentTaskId={currentTaskId}
@@ -308,7 +332,6 @@ function Tasks() {
             app={app}
             isTaskActionModalOpen={isTaskActionModalOpen}
             setIsTaskActionModalOpen={setIsTaskActionModalOpen}
-            setRefreshTasks={setRefreshTasks}
         />
         </>
     );

@@ -20,7 +20,6 @@ function TaskActionModal({
     app,
     isTaskActionModalOpen,
     setIsTaskActionModalOpen,
-    setRefreshTasks
 }) {
     // Style for the modal
     const modalStyle = {
@@ -57,7 +56,7 @@ function TaskActionModal({
     // store all available plans
     const [planOptions, setPlanOptions] = useState([]);
 
-    // get task details refresh when changed
+    // get task details refresh if modal closes or opens
     useEffect(() => {
         // Check if app is valid, if not push to main page
         if (!app) {
@@ -115,10 +114,6 @@ function TaskActionModal({
                     }
                 } catch (e) {
                     try {
-                        if (e.response.status === 401) {
-                            Cookies.remove('jwt-token');
-                            navigate("/");
-                        }
                         let error = e.response.data
                         if (error) {
                             // Show error message
@@ -152,10 +147,6 @@ function TaskActionModal({
                     }
                 } catch (e) {
                     try {
-                        if (e.response.status === 401) {
-                            Cookies.remove('jwt-token');
-                            navigate("/");
-                        }
                         let error = e.response.data
                         if (error) {
                             // Show error message
@@ -198,6 +189,10 @@ function TaskActionModal({
                             Cookies.remove('jwt-token');
                             navigate("/");
                         }
+
+                        if (e.response.status === 403) {
+                            handleCloseModal();
+                        }
             
                         let error = e.response.data
                         if (error) {
@@ -213,16 +208,6 @@ function TaskActionModal({
                     }
                 } catch (e) {
                     try {
-                        if (e.response.status === 401) {
-                            Cookies.remove('jwt-token');
-                            navigate("/");
-                        }
-                        
-                        if (e.response.status === 403) {
-                            setIsTaskActionModalOpen(false);
-                            setInputs(initialInputs);
-                        }
-        
                         let error = e.response.data
                         if (error) {
                             // Show error message
@@ -249,6 +234,10 @@ function TaskActionModal({
                             Cookies.remove('jwt-token');
                             navigate("/");
                         }
+
+                        if (e.response.status === 403) {
+                            handleCloseModal();
+                        }
             
                         let error = e.response.data
                         if (error) {
@@ -264,16 +253,6 @@ function TaskActionModal({
                     }
                 } catch (e) {
                     try {
-                        if (e.response.status === 401) {
-                            Cookies.remove('jwt-token');
-                            navigate("/");
-                        }
-                        
-                        if (e.response.status === 403) {
-                            setIsTaskActionModalOpen(false);
-                            setInputs(initialInputs);
-                        }
-        
                         let error = e.response.data
                         if (error) {
                             // Show error message
@@ -301,6 +280,10 @@ function TaskActionModal({
                         Cookies.remove('jwt-token');
                         navigate("/");
                     }
+
+                    if (e.response.status === 403) {
+                        handleCloseModal();
+                    }
         
                     let error = e.response.data
                     if (error) {
@@ -316,16 +299,6 @@ function TaskActionModal({
                 }
             } catch (e) {
                 try {
-                    if (e.response.status === 401) {
-                        Cookies.remove('jwt-token');
-                        navigate("/");
-                    }
-                    
-                    if (e.response.status === 403) {
-                        setIsTaskActionModalOpen(false);
-                        setInputs(initialInputs);
-                    }
-    
                     let error = e.response.data
                     if (error) {
                         // Show error message
@@ -344,7 +317,6 @@ function TaskActionModal({
 
     const handleCloseModal = () => {
         setIsTaskActionModalOpen(false);
-        setRefreshTasks(true);
         setInputs(initialInputs);
     }
 

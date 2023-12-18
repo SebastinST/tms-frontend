@@ -15,8 +15,7 @@ import { useNavigate } from "react-router-dom";
 function TaskCreationModal({
     app,
     isTaskCreationModalOpen,
-    setIsTaskCreationModalOpen,
-    setRefreshTasks
+    setIsTaskCreationModalOpen
 }) {
     const navigate = useNavigate();
     
@@ -65,6 +64,10 @@ function TaskCreationModal({
                     Cookies.remove('jwt-token');
                     navigate("/");
                 }
+
+                if (e.response.status === 403) {
+                    handleCloseModal();
+                }
     
                 let error = e.response.data
                 if (error) {
@@ -80,16 +83,6 @@ function TaskCreationModal({
             }
         } catch (e) {
             try {
-                if (e.response.status === 401) {
-                    Cookies.remove('jwt-token');
-                    navigate("/");
-                }
-                
-                if (e.response.status === 403) {
-                    setIsTaskCreationModalOpen(false);
-                    setInputs(initialInputs);
-                }
-
                 let error = e.response.data
                 if (error) {
                     // Show error message
@@ -107,10 +100,8 @@ function TaskCreationModal({
 
     const handleCloseModal = () => {
         setIsTaskCreationModalOpen(false);
-        setRefreshTasks(true);
         setInputs(initialInputs);
     }
-    // Fix creating multiple tasks
 
     return (
         <Modal open={isTaskCreationModalOpen} onClose={handleCloseModal}>
