@@ -209,7 +209,7 @@ function EditApp(props) {
                             {
                             editing
                             ?   <div>
-                                <TextField name="App_startDate" size="small" label="Start" value={inputs.App_startDate || ""} onChange={handleChange}/> <TextField name="App_endDate" size="small" label="End" value={inputs.App_endDate || ""} onChange={handleChange}/>
+                                <TextField name="App_startDate" size="small" label="Start" value={inputs.App_startDate || ""} onChange={handleChange} inputProps={{ maxLength: 10 }}/> <TextField name="App_endDate" size="small" label="End" value={inputs.App_endDate || ""} onChange={handleChange} inputProps={{ maxLength: 10 }}/>
                                 </div>
                             : <div>
                             Start: {app.App_startDate}<br/>
@@ -218,11 +218,7 @@ function EditApp(props) {
                             }
                         </TableCell>
                         <TableCell align="center" style={{ width: "5%" }}>
-                            {
-                            editing
-                            ? <TextField name="App_Rnumber" size="small" label="Rnum" value={inputs.App_Rnumber || ""} onChange={handleChange}/>
-                            : app.App_Rnumber
-                            }
+                            {app.App_Rnumber}
                         </TableCell>
                         <TableCell style={{ width: "25%" }}>
                             {
@@ -314,7 +310,7 @@ function EditApp(props) {
                                 styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
                                 isClearable
                                 />
-                            : app.App_permit_create
+                            : app.App_permit_Doing
                                 ? <button className="group-button">{app.App_permit_Doing}</button>
                                 : ""
                             }
