@@ -174,15 +174,17 @@ function Tasks() {
             } else {
                 return false;
             }
-        } 
+        }
 
         const checkPermits = async () => {
-            setIsPM(await Checkgroup("pm").then(checkPermitResult));
-            setPermitCreate(await Checkgroup(app.App_permit_create).then(checkPermitResult))
-            setPermitOpen(await Checkgroup(app.App_permit_Open).then(checkPermitResult))
-            setPermitToDo(await Checkgroup(app.App_permit_toDoList).then(checkPermitResult))
-            setPermitDoing(await Checkgroup(app.App_permit_Doing).then(checkPermitResult))
-            setPermitDone(await Checkgroup(app.App_permit_Done).then(checkPermitResult))
+            if (app) {
+                setIsPM(await Checkgroup("pm").then(checkPermitResult));
+                setPermitCreate(await Checkgroup(app.App_permit_create).then(checkPermitResult))
+                setPermitOpen(await Checkgroup(app.App_permit_Open).then(checkPermitResult))
+                setPermitToDo(await Checkgroup(app.App_permit_toDoList).then(checkPermitResult))
+                setPermitDoing(await Checkgroup(app.App_permit_Doing).then(checkPermitResult))
+                setPermitDone(await Checkgroup(app.App_permit_Done).then(checkPermitResult))
+            }
         }
         checkPermits();
     }, [
@@ -314,24 +316,28 @@ function Tasks() {
         <Grid container spacing={3} style={{overflowY: "auto", width: "100%", paddingLeft : "20px"}}>
             {taskLists}
         </Grid>
-        <TaskCreationModal 
-            app={app}
-            isTaskCreationModalOpen={isTaskCreationModalOpen} 
-            setIsTaskCreationModalOpen={setIsTaskCreationModalOpen}
-        />
-        <TaskDetailModal
-            currentTaskId={currentTaskId}
-            app={app}
-            isTaskDetailModalOpen={isTaskDetailModalOpen}
-            setIsTaskDetailModalOpen={setIsTaskDetailModalOpen}
-        />
-        <TaskActionModal
-            currentTaskId={currentTaskId}
-            isPromoting={isPromoting}
-            app={app}
-            isTaskActionModalOpen={isTaskActionModalOpen}
-            setIsTaskActionModalOpen={setIsTaskActionModalOpen}
-        />
+        {app &&
+            <>
+            <TaskCreationModal 
+                app={app}
+                isTaskCreationModalOpen={isTaskCreationModalOpen} 
+                setIsTaskCreationModalOpen={setIsTaskCreationModalOpen}
+            />
+            <TaskDetailModal
+                currentTaskId={currentTaskId}
+                app={app}
+                isTaskDetailModalOpen={isTaskDetailModalOpen}
+                setIsTaskDetailModalOpen={setIsTaskDetailModalOpen}
+            />
+            <TaskActionModal
+                currentTaskId={currentTaskId}
+                isPromoting={isPromoting}
+                app={app}
+                isTaskActionModalOpen={isTaskActionModalOpen}
+                setIsTaskActionModalOpen={setIsTaskActionModalOpen}
+            />
+            </>
+        }
         </>
     );
 }

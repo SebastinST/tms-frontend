@@ -25,9 +25,6 @@ function Plans() {
     useEffect(() => {
         // Check if app is valid, if not push to main page
         if (!app) {
-            toast.error("Error: No application selected", {
-                autoClose: false,
-            });
             navigate("/main");
         }
         async function getPlansByApp() {
