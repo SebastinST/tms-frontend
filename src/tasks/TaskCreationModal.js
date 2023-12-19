@@ -79,7 +79,7 @@ function TaskCreationModal({
             });
             if (result) {
                 toast.success(result.data.message);
-                handleCloseModal();
+                setInputs(initialInputs);
             }
         } catch (e) {
             try {

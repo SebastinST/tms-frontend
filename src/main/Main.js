@@ -95,9 +95,9 @@ function Main() {
             <Typography variant="h4" align="center">Application List</Typography>
             <AppHeader/>
         </Box>
-        <Box sx={{flex:1, display:"flex", flexDirection:"column", gap:"5px", overflow:"auto"}}>
+        <Box sx={{width:"100%", flex:1, display:"flex", flexDirection:"column", gap:"5px", overflow:"auto"}}>
             {isPL && <AddApp setRefreshApps={setRefreshApps}/>}
-            <Box sx={{flex:1, display:"flex", flexDirection:"column", gap:"5px"}}>
+            <Box sx={{width:"100%", flex:1, display:"flex", flexDirection:"column", gap:"5px"}}>
                 {appRows}
             </Box>
         </Box>
